@@ -10,5 +10,5 @@
         $CoffeeHouse->getTelegramConfiguration()['ApiKey'],
         $CoffeeHouse->getTelegramConfiguration()['BotName']
     );
-    $telegram->addCommandsPaths([__DIR__ . DIRECTORY_SEPARATOR . 'commands',]);
+    $telegram->addCommandsPaths([__DIR__ . DIRECTORY_SEPARATOR,]);
     $telegram->handle();

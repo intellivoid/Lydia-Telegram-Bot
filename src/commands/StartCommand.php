@@ -53,7 +53,7 @@
             $message = $this->getMessage();
 
             $CoffeeHouse = new CoffeeHouse();
-            $TelegramClient = $CoffeeHouse->getTelegramClientManager()->syncClient($message->getChat()->getId());
+            $CoffeeHouse->getTelegramClientManager()->syncClient($message->getChat()->getId());
 
             $data = [
                 'chat_id' => $message->getChat()->getId(),
