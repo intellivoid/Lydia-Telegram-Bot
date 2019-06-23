@@ -98,7 +98,23 @@
                 }
             }
 
-            $Output = $Bot->think($message->getText(true));
+            try
+            {
+                $Output = $Bot->think($message->getText(true));
+            }
+            catch(BotSessionException $botSessionException)
+            {
+                // Mark is unavailable
+                $Bot->getSession()->Available = false;
+                $CoffeeHouse->getForeignSessionsManager()->updateSession($Bot->getSession());
+
+                $Bot->newSession('en');
+                $TelegramClient->ForeignSessionID = $Bot->getSession()->SessionID;
+                $CoffeeHouse->getTelegramClientManager()->updateClient($TelegramClient);
+
+                // Rethink the output
+                $Output = $Bot->think($message->getText(true));
+            }
 
             $data = [
                 'chat_id' => $message->getChat()->getId(),
