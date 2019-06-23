@@ -43,6 +43,11 @@
         {
             $message = $this->getMessage();
 
+            if($message == null)
+            {
+                return null;
+            }
+
             $CoffeeHouse = new CoffeeHouse();
             $TelegramClient = $CoffeeHouse->getTelegramClientManager()->syncClient($message->getChat()->getId());
 
