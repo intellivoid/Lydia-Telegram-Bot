@@ -8,10 +8,13 @@
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
     use CoffeeHouse\Exceptions\TelegramClientNotFoundException;
+    use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\SystemCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
+    use Longman\TelegramBot\Telegram;
+
     /**
      * Start command
      *
@@ -43,17 +46,42 @@
             $CoffeeHouse = new CoffeeHouse();
             $TelegramClient = $CoffeeHouse->getTelegramClientManager()->syncClient($message->getChat()->getId());
 
-            if(strlen($message->getText(true)) == 0)
+            if($message->getChat()->isGroupChat())
             {
-                $data = [
-                    'chat_id' => $message->getChat()->getId(),
-                    'text' => "Learn to use the chat command thx"
-                ];
+                if($message->getReplyToMessage() !== null)
+                {
+                    if($message->getReplyToMessage()->getBotUsername() !== $CoffeeHouse->getTelegramConfiguration()['BotName'])
+                    {
+                        return null;
+                    }
+                }
+                elseif(!stripos(strtolower($message->getText(true)), 'lydia'))
+                {
+                    return null;
+                }
+            }
 
-                return Request::sendMessage($data);
+            if($message->getChat()->isSuperGroup())
+            {
+                if($message->getReplyToMessage() !== null)
+                {
+                    if($message->getReplyToMessage()->getBotUsername() !== $CoffeeHouse->getTelegramConfiguration()['BotName'])
+                    {
+                        return null;
+                    }
+                }
+                elseif(!stripos(strtolower($message->getText(true)), 'lydia'))
+                {
+                    return null;
+                }
             }
 
             $Bot = new Cleverbot($CoffeeHouse);
+
+            Request::sendChatAction([
+                'chat_id' => $message->getChat()->getId(),
+                'action' => ChatAction::TYPING
+            ]);
 
             // Check if the Telegram Client has a session ID
             if($TelegramClient->ForeignSessionID == 'None')
@@ -73,11 +101,12 @@
                 }
             }
 
+
             $Output = $Bot->think($message->getText(true));
 
             $data = [
                 'chat_id' => $message->getChat()->getId(),
-                'text' => $Output
+                'text' => $Output . "\n\n"
             ];
 
             return Request::sendMessage($data);

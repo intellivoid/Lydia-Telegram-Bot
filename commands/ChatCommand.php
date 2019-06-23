@@ -8,6 +8,7 @@
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
     use CoffeeHouse\Exceptions\TelegramClientNotFoundException;
+    use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\SystemCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
@@ -72,6 +73,11 @@
                 return Request::sendMessage($data);
             }
 
+            Request::sendChatAction([
+                'chat_id' => $message->getChat()->getId(),
+                'action' => ChatAction::TYPING
+            ]);
+
             $Bot = new Cleverbot($CoffeeHouse);
 
             // Check if the Telegram Client has a session ID
@@ -96,11 +102,7 @@
 
             $data = [
                 'chat_id' => $message->getChat()->getId(),
-                'text' =>
-                    $Output . "\n\n\n" .
-                    "== Debugging Information ==\n" .
-                    "Session: " . $Bot->getSession()->SessionID . "\n\n" .
-                    "Path Processing:\n\n" . str_ireplace('cb', 'synical_ai', json_encode($Bot->getSession()->Variables))
+                'text' => $Output
             ];
 
             return Request::sendMessage($data);
