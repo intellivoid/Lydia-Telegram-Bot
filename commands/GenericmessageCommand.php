@@ -46,6 +46,9 @@
             $CoffeeHouse = new CoffeeHouse();
             $TelegramClient = $CoffeeHouse->getTelegramClientManager()->syncClient($message->getChat()->getId());
 
+            $i = 'i';
+            $needle = 'lydia';
+
             if($message->getChat()->isGroupChat())
             {
                 if($message->getReplyToMessage() !== null)
@@ -61,10 +64,11 @@
                         return null;
                     }
                 }
-                elseif(!stripos(strtolower($message->getText(true)), 'lydia'))
+                elseif(!preg_match("/\b{$needle}\b/{$i}", strtolower($message->getText(true))))
                 {
                     return null;
                 }
+
             }
 
             if($message->getChat()->isSuperGroup())
@@ -82,7 +86,7 @@
                         return null;
                     }
                 }
-                elseif(!stripos(strtolower($message->getText(true)), 'lydia'))
+                elseif(!preg_match("/\b{$needle}\b/{$i}", strtolower($message->getText(true))))
                 {
                     return null;
                 }
