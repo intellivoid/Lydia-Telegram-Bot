@@ -50,7 +50,13 @@
             {
                 if($message->getReplyToMessage() !== null)
                 {
-                    if($message->getReplyToMessage()->getBotUsername() !== $CoffeeHouse->getTelegramConfiguration()['BotName'])
+                    $ReplyUsername = 'None';
+                    if( $message->getReplyToMessage()->getFrom()->getUsername() !== null)
+                    {
+                        $ReplyUsername =  $message->getReplyToMessage()->getFrom()->getUsername();
+                    }
+
+                    if($ReplyUsername !== $CoffeeHouse->getTelegramConfiguration()['BotName'])
                     {
                         return null;
                     }
@@ -65,7 +71,13 @@
             {
                 if($message->getReplyToMessage() !== null)
                 {
-                    if($message->getReplyToMessage()->getBotUsername() !== $CoffeeHouse->getTelegramConfiguration()['BotName'])
+                    $ReplyUsername = 'None';
+                    if( $message->getReplyToMessage()->getFrom()->getUsername() !== null)
+                    {
+                        $ReplyUsername =  $message->getReplyToMessage()->getFrom()->getUsername();
+                    }
+
+                    if($ReplyUsername !== $CoffeeHouse->getTelegramConfiguration()['BotName'])
                     {
                         return null;
                     }
