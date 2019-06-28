@@ -1,6 +1,7 @@
 <?php
 
     namespace Longman\TelegramBot\Commands\SystemCommands;
+
     use CoffeeHouse\Bots\Cleverbot;
     use CoffeeHouse\CoffeeHouse;
     use CoffeeHouse\Exceptions\BotSessionException;
@@ -13,7 +14,8 @@
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
-    use Longman\TelegramBot\Telegram;
+    use ModularAPI\Abstracts\AccessKeySearchMethod;
+    use ModularAPI\ModularAPI;
 
     /**
      * Start command
@@ -139,6 +141,13 @@
                 // Rethink the output
                 $Output = $Bot->think($message->getText(true));
             }
+
+            $ModularAPI = new ModularAPI();
+            $AccessKey = $ModularAPI->AccessKeys()->Manager->get(
+                AccessKeySearchMethod::byPublicID,
+                '0067db960e18a3c30cb109df2d66dab601e78601cff1404410e4e7c58f0f199b'
+            );
+            $ModularAPI->AccessKeys()->trackUsage($AccessKey, false);
 
             $data = [
                 'chat_id' => $message->getChat()->getId(),
