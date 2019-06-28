@@ -34,12 +34,17 @@
          * Command execute method
          *
          * @return ServerResponse
-         * @throws DatabaseException
-         * @throws TelegramClientNotFoundException
-         * @throws TelegramException
          * @throws BotSessionException
+         * @throws DatabaseException
          * @throws ForeignSessionNotFoundException
          * @throws InvalidSearchMethodException
+         * @throws TelegramClientNotFoundException
+         * @throws TelegramException
+         * @throws \ModularAPI\Exceptions\AccessKeyExpiredException
+         * @throws \ModularAPI\Exceptions\AccessKeyNotFoundException
+         * @throws \ModularAPI\Exceptions\NoResultsFoundException
+         * @throws \ModularAPI\Exceptions\UnsupportedSearchMethodException
+         * @throws \ModularAPI\Exceptions\UsageExceededException
          */
         public function execute()
         {

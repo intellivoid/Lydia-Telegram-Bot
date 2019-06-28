@@ -13,6 +13,9 @@
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
+    use ModularAPI\Abstracts\AccessKeySearchMethod;
+    use ModularAPI\ModularAPI;
+
     /**
      * Start command
      *
@@ -49,12 +52,17 @@
          * Command execute method
          *
          * @return ServerResponse
-         * @throws DatabaseException
-         * @throws TelegramClientNotFoundException
-         * @throws TelegramException
          * @throws BotSessionException
+         * @throws DatabaseException
          * @throws ForeignSessionNotFoundException
          * @throws InvalidSearchMethodException
+         * @throws TelegramClientNotFoundException
+         * @throws TelegramException
+         * @throws \ModularAPI\Exceptions\AccessKeyExpiredException
+         * @throws \ModularAPI\Exceptions\AccessKeyNotFoundException
+         * @throws \ModularAPI\Exceptions\NoResultsFoundException
+         * @throws \ModularAPI\Exceptions\UnsupportedSearchMethodException
+         * @throws \ModularAPI\Exceptions\UsageExceededException
          */
         public function execute()
         {
@@ -115,6 +123,13 @@
                 // Rethink the output
                 $Output = $Bot->think($message->getText(true));
             }
+
+            $ModularAPI = new ModularAPI();
+            $AccessKey = $ModularAPI->AccessKeys()->Manager->get(
+                AccessKeySearchMethod::byPublicID,
+                '0067db960e18a3c30cb109df2d66dab601e78601cff1404410e4e7c58f0f199b'
+            );
+            $ModularAPI->AccessKeys()->trackUsage($AccessKey, false);
 
             $data = [
                 'chat_id' => $message->getChat()->getId(),
