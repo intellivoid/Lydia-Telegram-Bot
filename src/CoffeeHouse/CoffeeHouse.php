@@ -4,14 +4,17 @@
     namespace CoffeeHouse;
 
     use acm\acm;
+    use CoffeeHouse\Managers\ApiPlanManager;
     use CoffeeHouse\Managers\ChatDialogsManager;
     use CoffeeHouse\Managers\ForeignSessionsManager;
     use CoffeeHouse\Managers\TelegramClientManager;
     use Exception;
     use mysqli;
 
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Abstracts' . DIRECTORY_SEPARATOR . 'APIPlan.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Abstracts' . DIRECTORY_SEPARATOR . 'ExceptionCodes.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Abstracts' . DIRECTORY_SEPARATOR . 'ForeignSessionSearchMethod.php');
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Abstracts' . DIRECTORY_SEPARATOR . 'PlanSearchMethod.php');
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Bots' . DIRECTORY_SEPARATOR . 'Cleverbot.php');
 
@@ -19,17 +22,21 @@
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Classes' . DIRECTORY_SEPARATOR . 'Utilities.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Classes' . DIRECTORY_SEPARATOR . 'Validation.php');
 
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'ApiPlanNotFoundException.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'BotSessionException.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'DatabaseException.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'ForeignSessionNotFoundException.php');
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'InvalidApiPlanTypeException.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'InvalidMessageException.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'InvalidSearchMethodException.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Exceptions' . DIRECTORY_SEPARATOR . 'TelegramClientNotFoundException.php');
 
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Managers' . DIRECTORY_SEPARATOR . 'ApiPlanManager.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Managers' . DIRECTORY_SEPARATOR . 'ChatDialogsManager.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Managers' . DIRECTORY_SEPARATOR . 'ForeignSessionsManager.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Managers' . DIRECTORY_SEPARATOR . 'TelegramClientManager.php');
 
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Objects' . DIRECTORY_SEPARATOR . 'ApiPlan.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Objects' . DIRECTORY_SEPARATOR . 'BotThought.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Objects' . DIRECTORY_SEPARATOR . 'ForeignSession.php');
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'Objects' . DIRECTORY_SEPARATOR . 'HttpResponse.php');
@@ -44,6 +51,16 @@
     if(class_exists('acm\acm') == false)
     {
         include_once(__DIR__ . DIRECTORY_SEPARATOR . 'acm' . DIRECTORY_SEPARATOR . 'acm.php');
+    }
+
+    if(class_exists('ModularAPI\ModularAPI') == false)
+    {
+        include_once(__DIR__ . DIRECTORY_SEPARATOR . 'ModularAPI' . DIRECTORY_SEPARATOR . 'ModularAPI.php');
+    }
+
+    if(class_exists('AnalyticsManager\AnalyticsManager') == false)
+    {
+        include_once(__DIR__ . DIRECTORY_SEPARATOR . 'AnalyticsManager' . DIRECTORY_SEPARATOR . 'AnalyticsManager.php');
     }
 
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'AutoConfig.php');
@@ -90,6 +107,11 @@
         private $TelegramConfiguration;
 
         /**
+         * @var ApiPlanManager
+         */
+        private $ApiPlanManager;
+
+        /**
          * CoffeeHouse constructor.
          * @throws Exception
          */
@@ -103,6 +125,7 @@
             $this->ForeignSessionsManager = new ForeignSessionsManager($this);
             $this->ChatDialogsManager = new ChatDialogsManager($this);
             $this->TelegramClientManager = new TelegramClientManager($this);
+            $this->ApiPlanManager = new ApiPlanManager($this);
         }
 
         /**
@@ -154,6 +177,22 @@
         public function getTelegramConfiguration()
         {
             return $this->TelegramConfiguration;
+        }
+
+        /**
+         * @return mixed
+         */
+        public function getDatabaseConfiguration()
+        {
+            return $this->DatabaseConfiguration;
+        }
+
+        /**
+         * @return ApiPlanManager
+         */
+        public function getApiPlanManager(): ApiPlanManager
+        {
+            return $this->ApiPlanManager;
         }
 
     }
