@@ -131,8 +131,12 @@
 
             try
             {
+	    if($message->getText(true) == NULL) {
+	        $Output = "I do not understand this. Sorry";
+	    } else {
                 $Output = $Bot->think($message->getText(true));
             }
+	    }
             catch(BotSessionException $botSessionException)
             {
                 // Mark is unavailable
@@ -144,8 +148,12 @@
                 $CoffeeHouse->getTelegramClientManager()->updateClient($TelegramClient);
 
                 // Rethink the output
-                $Output = $Bot->think($message->getText(true));
-            }
+                if($message->getText(true) == NULL){
+			$Output = "I do not get you. Sorry.";
+		} else {
+			$Output = $Bot->think($message->getText(true));
+		}
+}
 
             $ModularAPI = new ModularAPI();
             $AccessKey = $ModularAPI->AccessKeys()->Manager->get(
