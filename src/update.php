@@ -1,18 +1,28 @@
 <?php
 
-    use CoffeeHouse\CoffeeHouse;
+    use acm\acm;
+    use acm\Objects\Schema;
     use Longman\TelegramBot\Exception\TelegramException;
 
     require __DIR__ . '/vendor/autoload.php';
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'CoffeeHouse' . DIRECTORY_SEPARATOR . 'CoffeeHouse.php');
 
-    $CoffeeHouse = new CoffeeHouse();
+    $acm = new acm(__DIR__, 'Lydia Telegram Bot');
+
+    $TelegramSchema = new Schema();
+    $TelegramSchema->setDefinition('BotName', '<BOT NAME HERE>');
+    $TelegramSchema->setDefinition('BotToken', '<BOT TOKEN>');
+    $TelegramSchema->setDefinition('BotEnabled', 'true');
+    $TelegramSchema->setDefinition('WebHook', 'http://localhost');
+    $acm->defineSchema('TelegramService', $TelegramSchema);
+
+    $TelegramServiceConfiguration = $acm->getConfiguration('TelegramService');
 
     try
     {
         $telegram = new Longman\TelegramBot\Telegram(
-            $CoffeeHouse->getTelegramConfiguration()['ApiKey'],
-            $CoffeeHouse->getTelegramConfiguration()['BotName']
+            $TelegramServiceConfiguration['BotToken'],
+            $TelegramServiceConfiguration['BotName']
         );
     }
     catch (TelegramException $e)
@@ -24,7 +34,7 @@
 
     try
     {
-        $result = $telegram->setWebhook($CoffeeHouse->getTelegramConfiguration()['WebHook']);
+        $result = $telegram->setWebhook($TelegramServiceConfiguration['WebHook']);
     }
     catch (TelegramException $e)
     {
