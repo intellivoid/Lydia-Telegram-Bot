@@ -18,6 +18,7 @@
     $acm->defineSchema('TelegramService', $TelegramSchema);
 
     $TelegramServiceConfiguration = $acm->getConfiguration('TelegramService');
+    define("TELEGRAM_BOT_NAME", $TelegramServiceConfiguration['BotName'], false);
 
     $CoffeeHouse = new CoffeeHouse();
     $telegram = new Longman\TelegramBot\Telegram(
