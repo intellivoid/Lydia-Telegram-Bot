@@ -1,25 +1,29 @@
 <?php
 
     namespace Longman\TelegramBot\Commands\SystemCommands;
+
     use CoffeeHouse\Bots\Cleverbot;
     use CoffeeHouse\CoffeeHouse;
     use CoffeeHouse\Exceptions\BotSessionException;
     use CoffeeHouse\Exceptions\DatabaseException;
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
-    use CoffeeHouse\Exceptions\TelegramClientNotFoundException;
+    use Exception;
     use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\SystemCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
-    use ModularAPI\Abstracts\AccessKeySearchMethod;
-    use ModularAPI\ModularAPI;
+    use TelegramClientManager\Exceptions\InvalidSearchMethod;
+    use TelegramClientManager\Exceptions\TelegramClientNotFoundException;
+    use TelegramClientManager\Objects\TelegramClient\Chat;
+    use TelegramClientManager\Objects\TelegramClient\User;
+    use TelegramClientManager\TelegramClientManager;
 
     /**
-     * Start command
+     * Chat command
      *
-     * Gets executed when a user first starts using the bot.
+     * Gets executed when a user sends '/chat'
      */
     class ChatCommand extends SystemCommand
     {
@@ -49,32 +53,45 @@
         protected $private_only = false;
 
         /**
-         * Command execute method
+         * Executes the chat command
          *
          * @return ServerResponse
          * @throws BotSessionException
          * @throws DatabaseException
          * @throws ForeignSessionNotFoundException
          * @throws InvalidSearchMethodException
-         * @throws TelegramClientNotFoundException
          * @throws TelegramException
-         * @throws \ModularAPI\Exceptions\AccessKeyExpiredException
-         * @throws \ModularAPI\Exceptions\AccessKeyNotFoundException
-         * @throws \ModularAPI\Exceptions\NoResultsFoundException
-         * @throws \ModularAPI\Exceptions\UnsupportedSearchMethodException
-         * @throws \ModularAPI\Exceptions\UsageExceededException
+         * @throws \TelegramClientManager\Exceptions\DatabaseException
          */
         public function execute()
         {
-            $message = $this->getMessage();
+            $TelegramClientManager = new TelegramClientManager();
 
-            $CoffeeHouse = new CoffeeHouse();
-            $TelegramClient = $CoffeeHouse->getTelegramClientManager()->syncClient($message->getChat()->getId());
-
-            if(strlen($message->getText(true)) == 0)
+            try
+            {
+                $TelegramClient = $TelegramClientManager->getTelegramClientManager()->registerClient(
+                    Chat::fromArray($this->getMessage()->getChat()->getRawData()),
+                    User::fromArray($this->getMessage()->getFrom()->getRawData())
+                );
+            }
+            catch(Exception $e)
             {
                 $data = [
-                    'chat_id' => $message->getChat()->getId(),
+                    'chat_id' => $this->getMessage()->getChat()->getId(),
+                    'reply_to_message_id' => $this->getMessage()->getMessageId(),
+                    'text' => "Oops! Something went wrong! contact someone in @IntellivoidDev"
+                ];
+
+                return Request::sendMessage($data);
+            }
+
+            $CoffeeHouse = new CoffeeHouse();
+
+            if(strlen($this->getMessage()->getText(true)) == 0)
+            {
+                $data = [
+                    'chat_id' => $this->getMessage()->getChat()->getId(),
+                    'reply_to_message_id' => $this->getMessage()->getMessageId(),
                     'text' => "Learn to use the chat command thx"
                 ];
 
@@ -82,33 +99,47 @@
             }
 
             Request::sendChatAction([
-                'chat_id' => $message->getChat()->getId(),
+                'chat_id' => $this->getMessage()->getChat()->getId(),
                 'action' => ChatAction::TYPING
             ]);
 
             $Bot = new Cleverbot($CoffeeHouse);
 
-            // Check if the Telegram Client has a session ID
-            if($TelegramClient->ForeignSessionID == 'None')
+            if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
             {
-                $Bot->newSession('en');
-                $TelegramClient->ForeignSessionID = $Bot->getSession()->SessionID;
-                $CoffeeHouse->getTelegramClientManager()->updateClient($TelegramClient);
+                if(is_null($this->getMessage()->getFrom()->getLanguageCode()))
+                {
+                    $TelegramClient->SessionData->Data['lydia_default_language'] = 'en';
+                }
+                else
+                {
+                    $TelegramClient->SessionData->Data['lydia_default_language'] = $this->getMessage()->getFrom()->getLanguageCode();
+                }
+                $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+            }
+
+            // Check if the Telegram Client has a session ID
+            if(isset($TelegramClient->SessionData->Data['lydia_session_id']) == false)
+            {
+                $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
+                $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
+                $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+
             }
             else
             {
-                $Bot->loadSession($TelegramClient->ForeignSessionID);
-                if(time() > $Bot->getSession()->Expires)
+                $Bot->loadSession($TelegramClient->SessionData->Data['lydia_session_id']);
+                if((int)time() > $Bot->getSession()->Expires)
                 {
-                    $Bot->newSession('en');
-                    $TelegramClient->ForeignSessionID = $Bot->getSession()->SessionID;
-                    $CoffeeHouse->getTelegramClientManager()->updateClient($TelegramClient);
+                    $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
+                    $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
+                    $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
                 }
             }
 
             try
             {
-                $Output = $Bot->think($message->getText(true));
+                $Output = $Bot->think($this->getMessage()->getText(true));
             }
             catch(BotSessionException $botSessionException)
             {
@@ -116,23 +147,17 @@
                 $Bot->getSession()->Available = false;
                 $CoffeeHouse->getForeignSessionsManager()->updateSession($Bot->getSession());
 
-                $Bot->newSession('en');
-                $TelegramClient->ForeignSessionID = $Bot->getSession()->SessionID;
-                $CoffeeHouse->getTelegramClientManager()->updateClient($TelegramClient);
+                $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
+                $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
+                $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
 
                 // Rethink the output
-                $Output = $Bot->think($message->getText(true));
+                $Output = $Bot->think($this->getMessage()->getText(true));
             }
 
-            $ModularAPI = new ModularAPI();
-            $AccessKey = $ModularAPI->AccessKeys()->Manager->get(
-                AccessKeySearchMethod::byPublicID,
-                '0067db960e18a3c30cb109df2d66dab601e78601cff1404410e4e7c58f0f199b'
-            );
-            $ModularAPI->AccessKeys()->trackUsage($AccessKey, false);
-
             $data = [
-                'chat_id' => $message->getChat()->getId(),
+                'chat_id' => $this->getMessage()->getChat()->getId(),
+                'reply_to_message_id' => $this->getMessage()->getMessageId(),
                 'text' => $Output
             ];
 
