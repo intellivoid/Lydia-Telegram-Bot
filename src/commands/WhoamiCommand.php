@@ -1,31 +1,31 @@
 <?php
 
     namespace Longman\TelegramBot\Commands\SystemCommands;
-
     use CoffeeHouse\Bots\Cleverbot;
     use CoffeeHouse\CoffeeHouse;
     use CoffeeHouse\Exceptions\BotSessionException;
     use CoffeeHouse\Exceptions\DatabaseException;
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
-    use Exception;
+    use CoffeeHouse\Exceptions\TelegramClientNotFoundException;
     use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\SystemCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
+    use ModularAPI\Abstracts\AccessKeySearchMethod;
+    use ModularAPI\ModularAPI;
     use TelegramClientManager\Exceptions\InvalidSearchMethod;
-    use TelegramClientManager\Exceptions\TelegramClientNotFoundException;
     use TelegramClientManager\Objects\TelegramClient\Chat;
     use TelegramClientManager\Objects\TelegramClient\User;
     use TelegramClientManager\TelegramClientManager;
 
     /**
-     * Start command
+     * WhoamiCommand command
      *
-     * Gets executed when a user first starts using the bot.
+     * Gets executed when a user sends /whoami
      */
-    class ChatCommand extends SystemCommand
+    class WhoamiCommand extends SystemCommand
     {
         /**
          * @var string
@@ -63,8 +63,7 @@
          * @throws TelegramException
          * @throws \TelegramClientManager\Exceptions\DatabaseException
          * @throws InvalidSearchMethod
-         * @throws TelegramClientNotFoundException
-         * @throws Exception
+         * @throws \TelegramClientManager\Exceptions\TelegramClientNotFoundException
          */
         public function execute()
         {
@@ -107,7 +106,8 @@
             ]);
 
             $Bot = new Cleverbot($CoffeeHouse);
-            
+
+
             if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
             {
                 $TelegramClient->SessionData->Data['lydia_default_language'] = 'en';
