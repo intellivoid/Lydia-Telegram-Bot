@@ -62,9 +62,6 @@
          * @throws InvalidSearchMethodException
          * @throws TelegramException
          * @throws \TelegramClientManager\Exceptions\DatabaseException
-         * @throws InvalidSearchMethod
-         * @throws TelegramClientNotFoundException
-         * @throws Exception
          */
         public function execute()
         {
@@ -110,7 +107,14 @@
 
             if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
             {
-                $TelegramClient->SessionData->Data['lydia_default_language'] = $this->getMessage()->getFrom()->getLanguageCode();
+                if(is_null($this->getMessage()->getFrom()->getLanguageCode()))
+                {
+                    $TelegramClient->SessionData->Data['lydia_default_language'] = 'en';
+                }
+                else
+                {
+                    $TelegramClient->SessionData->Data['lydia_default_language'] = $this->getMessage()->getFrom()->getLanguageCode();
+                }
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
             }
 

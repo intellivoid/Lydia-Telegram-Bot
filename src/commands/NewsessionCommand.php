@@ -96,7 +96,14 @@
 
             if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
             {
-                $TelegramClient->SessionData->Data['lydia_default_language'] = $this->getMessage()->getFrom()->getLanguageCode();
+                if(is_null($this->getMessage()->getFrom()->getLanguageCode()))
+                {
+                    $TelegramClient->SessionData->Data['lydia_default_language'] = 'en';
+                }
+                else
+                {
+                    $TelegramClient->SessionData->Data['lydia_default_language'] = $this->getMessage()->getFrom()->getLanguageCode();
+                }
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
             }
 
@@ -123,7 +130,7 @@
                     $data = [
                         'chat_id' => $this->getMessage()->getChat()->getId(),
                         'reply_to_message_id' => $this->getMessage()->getMessageId(),
-                        'text' => "The session must be older than 60 seconds to be reset"
+                        'text' => "The session must be older than 60 seconds"
                     ];
 
                     return Request::sendMessage($data);
