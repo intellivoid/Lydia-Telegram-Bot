@@ -3,6 +3,7 @@
     use acm\acm;
     use acm\Objects\Schema;
     use CoffeeHouse\CoffeeHouse;
+    use Longman\TelegramBot\Exception\TelegramException;
 
     require __DIR__ . '/vendor/autoload.php';
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'CoffeeHouse' . DIRECTORY_SEPARATOR . 'CoffeeHouse.php');
@@ -26,4 +27,15 @@
         $TelegramServiceConfiguration['BotName']
     );
     $telegram->addCommandsPaths([__DIR__ . DIRECTORY_SEPARATOR . 'commands']);
-    $telegram->handle();
+
+    try
+    {
+        $telegram->handle();
+    }
+    catch (TelegramException $e)
+    {
+        ?>
+        <h1>Access Denied</h1>
+        <p>Nothing to see here, the current time is <?PHP print(hash('sha256', time() . 'IV')); ?></p>
+        <?php
+    }
