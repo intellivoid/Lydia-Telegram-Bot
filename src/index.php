@@ -6,6 +6,7 @@
 
     require __DIR__ . '/vendor/autoload.php';
     include_once(__DIR__ . DIRECTORY_SEPARATOR . 'CoffeeHouse' . DIRECTORY_SEPARATOR . 'CoffeeHouse.php');
+    include_once(__DIR__ . DIRECTORY_SEPARATOR . 'TelegramClientManager' . DIRECTORY_SEPARATOR . 'TelegramClientManager.php');
 
     $acm = new acm(__DIR__, 'Lydia Telegram Bot');
 
