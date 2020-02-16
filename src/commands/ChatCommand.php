@@ -107,7 +107,7 @@
             ]);
 
             $Bot = new Cleverbot($CoffeeHouse);
-            
+
             if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
             {
                 $TelegramClient->SessionData->Data['lydia_default_language'] = 'en';
