@@ -106,14 +106,14 @@
 
             if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
             {
-                $TelegramClient->SessionData->Data['lydia_default_language'] = 'en';
+                $TelegramClient->SessionData->Data['lydia_default_language'] = $this->getMessage()->getFrom()->getLanguageCode();
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
             }
 
             // Check if the Telegram Client has a session ID
             if(isset($TelegramClient->SessionData->Data['lydia_session_id']) == false)
             {
-                $Bot->newSession('en');
+                $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
                 $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
 
@@ -123,7 +123,7 @@
                 $Bot->loadSession($TelegramClient->SessionData->Data['lydia_session_id']);
                 if((int)time() > $Bot->getSession()->Expires)
                 {
-                    $Bot->newSession('en');
+                    $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
                     $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                     $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
                 }
@@ -146,7 +146,7 @@
                 $Bot->getSession()->Available = false;
                 $CoffeeHouse->getForeignSessionsManager()->updateSession($Bot->getSession());
 
-                $Bot->newSession('en');
+                $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
                 $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
 

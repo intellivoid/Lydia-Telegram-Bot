@@ -5,7 +5,6 @@
     use CoffeeHouse\Bots\Cleverbot;
     use CoffeeHouse\CoffeeHouse;
     use CoffeeHouse\Exceptions\BotSessionException;
-    use CoffeeHouse\Exceptions\DatabaseException;
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
     use Exception;
@@ -14,33 +13,32 @@
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
-    use TelegramClientManager\Exceptions\InvalidSearchMethod;
-    use TelegramClientManager\Exceptions\TelegramClientNotFoundException;
+    use TelegramClientManager\Exceptions\DatabaseException;
     use TelegramClientManager\Objects\TelegramClient\Chat;
     use TelegramClientManager\Objects\TelegramClient\User;
     use TelegramClientManager\TelegramClientManager;
 
     /**
-     * Chat command
+     * Newsession Command
      *
-     * Gets executed when a user sends '/chat'
+     * Gets executed when a user sends /newsession
      */
-    class ChatCommand extends SystemCommand
+    class NewsessionCommand extends SystemCommand
     {
         /**
          * @var string
          */
-        protected $name = 'chat';
+        protected $name = 'newsession';
 
         /**
          * @var string
          */
-        protected $description = 'Send a chat message to the bot';
+        protected $description = 'Creates a new session if the the session is older than 60 seconds';
 
         /**
          * @var string
          */
-        protected $usage = '/chat';
+        protected $usage = '/newsession';
 
         /**
          * @var string
@@ -56,18 +54,17 @@
          * Executes the chat command
          *
          * @return ServerResponse
-         * @throws BotSessionException
-         * @throws DatabaseException
+         * @throws TelegramException
+         *\ @throws BotSessionException
+         * @throws \CoffeeHouse\Exceptions\DatabaseException
          * @throws ForeignSessionNotFoundException
          * @throws InvalidSearchMethodException
-         * @throws TelegramException
-         * @throws \TelegramClientManager\Exceptions\DatabaseException
-         * @throws InvalidSearchMethod
-         * @throws TelegramClientNotFoundException
-         * @throws Exception
+         * @throws DatabaseException
          */
         public function execute()
         {
+
+
             $TelegramClientManager = new TelegramClientManager();
 
             try
@@ -88,24 +85,13 @@
                 return Request::sendMessage($data);
             }
 
-            $CoffeeHouse = new CoffeeHouse();
-
-            if(strlen($this->getMessage()->getText(true)) == 0)
-            {
-                $data = [
-                    'chat_id' => $this->getMessage()->getChat()->getId(),
-                    'reply_to_message_id' => $this->getMessage()->getMessageId(),
-                    'text' => "Learn to use the chat command thx"
-                ];
-
-                return Request::sendMessage($data);
-            }
 
             Request::sendChatAction([
                 'chat_id' => $this->getMessage()->getChat()->getId(),
                 'action' => ChatAction::TYPING
             ]);
 
+            $CoffeeHouse = new CoffeeHouse();
             $Bot = new Cleverbot($CoffeeHouse);
 
             if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
@@ -125,39 +111,31 @@
             else
             {
                 $Bot->loadSession($TelegramClient->SessionData->Data['lydia_session_id']);
-                if((int)time() > $Bot->getSession()->Expires)
+                $MissCalculation = abs(($Bot->getSession()->Expires - time())  - 10800);
+                if($MissCalculation > 60)
                 {
                     $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
                     $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                     $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
                 }
-            }
+                else
+                {
+                    $data = [
+                        'chat_id' => $this->getMessage()->getChat()->getId(),
+                        'reply_to_message_id' => $this->getMessage()->getMessageId(),
+                        'text' => "The session must be older than 60 seconds to be reset"
+                    ];
 
-            try
-            {
-                $Output = $Bot->think($this->getMessage()->getText(true));
-            }
-            catch(BotSessionException $botSessionException)
-            {
-                // Mark is unavailable
-                $Bot->getSession()->Available = false;
-                $CoffeeHouse->getForeignSessionsManager()->updateSession($Bot->getSession());
-
-                $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
-                $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
-                $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
-
-                // Rethink the output
-                $Output = $Bot->think($this->getMessage()->getText(true));
+                    return Request::sendMessage($data);
+                }
             }
 
             $data = [
                 'chat_id' => $this->getMessage()->getChat()->getId(),
                 'reply_to_message_id' => $this->getMessage()->getMessageId(),
-                'text' => $Output
+                'text' => "A new session has been successfully created"
             ];
 
             return Request::sendMessage($data);
-
         }
     }
