@@ -21,7 +21,7 @@
     /**
      * Start command
      *
-     * Gets executed when a user first starts using the bot.
+     * Gets executed when a user sends a generic message
      */
     class GenericmessageCommand extends SystemCommand
     {
