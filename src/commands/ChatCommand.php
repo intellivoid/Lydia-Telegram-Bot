@@ -21,9 +21,9 @@
     use TelegramClientManager\TelegramClientManager;
 
     /**
-     * Start command
+     * Chat command
      *
-     * Gets executed when a user first starts using the bot.
+     * Gets executed when a user sends '/chat'
      */
     class ChatCommand extends SystemCommand
     {

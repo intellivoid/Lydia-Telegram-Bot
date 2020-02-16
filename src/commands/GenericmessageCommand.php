@@ -19,7 +19,7 @@
     use TelegramClientManager\TelegramClientManager;
 
     /**
-     * Start command
+     * Generic Command
      *
      * Gets executed when a user sends a generic message
      */
