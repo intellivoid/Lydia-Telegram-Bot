@@ -31,6 +31,10 @@
          */
         protected $private_only = false;
 
+        /**
+         * @var string
+         */
+        protected $version = '1.0.1';
 
         /**
          * Executes the generic message command
@@ -42,10 +46,12 @@
          * @throws InvalidSearchMethodException
          * @throws TelegramException
          * @throws DatabaseException
+         * @throws Exception
          */
         public function execute()
         {
             $TelegramClientManager = new TelegramClientManager();
+            $VerificationFailed = false;
 
             try
             {
@@ -56,18 +62,12 @@
             }
             catch(Exception $e)
             {
-                $data = [
-                    'chat_id' => $this->getMessage()->getChat()->getId(),
-                    'reply_to_message_id' => $this->getMessage()->getMessageId(),
-                    'text' => "Oops! Something went wrong! contact someone in @IntellivoidDev"
-                ];
-
-                return Request::sendMessage($data);
+                $VerificationFailed = true;
             }
 
             if($this->getMessage() == null)
             {
-                return null;
+                exit(0);
             }
 
             $CoffeeHouse = new CoffeeHouse();
@@ -87,15 +87,25 @@
 
                     if($ReplyUsername !== TELEGRAM_BOT_NAME)
                     {
-                        return null;
+                        exit(0);
                     }
                 }
                 elseif(!preg_match("/\b{$needle}\b/{$i}", strtolower($this->getMessage()->getText(true))))
                 {
-                    return null;
+                    exit(0);
                 }
             }
 
+            if($VerificationFailed)
+            {
+                $data = [
+                    'chat_id' => $this->getMessage()->getChat()->getId(),
+                    'reply_to_message_id' => $this->getMessage()->getMessageId(),
+                    'text' => "Oops! Something went wrong! (Error 99) contact someone in @IntellivoidDev."
+                ];
+
+                return Request::sendMessage($data);
+            }
 
             $Bot = new Cleverbot($CoffeeHouse);
 
