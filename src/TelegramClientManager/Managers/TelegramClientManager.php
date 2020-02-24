@@ -48,10 +48,11 @@
         {
             $CurrentTime = (int)time();
             $PublicID = Hashing::telegramClientPublicID($chat->ID, $user->ID);
+            $PublicID_og = $PublicID;
 
             try
             {
-                $ExistingClient = $this->getClient(TelegramClientSearchMethod::byPublicId, $PublicID);
+                $ExistingClient = $this->getClient(TelegramClientSearchMethod::byPublicId, $PublicID_og);
 
                 $ExistingClient->LastActivityTimestamp = $CurrentTime;
                 $ExistingClient->Available = true;
@@ -98,12 +99,13 @@
             );
 
             $QueryResults = $this->telegramClientManager->database->query($Query);
+
             if($QueryResults == false)
             {
                 throw new DatabaseException($Query, $this->telegramClientManager->database->error);
             }
 
-            return $this->getClient(TelegramClientSearchMethod::byPublicId, $PublicID);
+            return $this->getClient(TelegramClientSearchMethod::byPublicId, $PublicID_og);
         }
 
         /**
@@ -146,7 +148,7 @@
                 'user_id',
                 'last_activity',
                 'created'
-            ], $search_method, $value);
+            ], $search_method, $value, null, null, 1);
 
             $QueryResults = $this->telegramClientManager->database->query($Query);
 
