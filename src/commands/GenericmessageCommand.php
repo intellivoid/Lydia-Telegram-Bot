@@ -70,6 +70,59 @@
                 exit(0);
             }
 
+            $LydiaChanEnabled = false;
+            if($VerificationFailed != false)
+            {
+                if(isset($TelegramClient->SessionData->Data['lydiachan']))
+                {
+                    if($TelegramClient->SessionData->Data['lydiachan'])
+                    {
+                        $LydiaChanEnabled = true;
+                    }
+                }
+
+                if(strtolower($this->getMessage()->getText(true)) == "lydiachan")
+                {
+                    if(isset($TelegramClient->SessionData->Data['lydiachan']))
+                    {
+                        if($TelegramClient->SessionData->Data['lydiachan'] == false)
+                        {
+                            $TelegramClient->SessionData->Data['lydiachan'] = true;
+                        }
+                        else
+                        {
+                            $TelegramClient->SessionData->Data['lydiachan'] = false;
+                        }
+                    }
+                    else
+                    {
+                        $TelegramClient->SessionData->Data['lydiachan'] = true;
+                    }
+
+                    $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+                    if($TelegramClient->SessionData->Data['lydiachan'])
+                    {
+                        $data = [
+                            'chat_id' => $this->getMessage()->getChat()->getId(),
+                            'reply_to_message_id' => $this->getMessage()->getMessageId(),
+                            'text' => "Onnichann!! //>.<// LydiaChan at your service!!1! :3"
+                        ];
+
+                        return Request::sendMessage($data);
+                    }
+                    else
+                    {
+                        $data = [
+                            'chat_id' => $this->getMessage()->getChat()->getId(),
+                            'reply_to_message_id' => $this->getMessage()->getMessageId(),
+                            'text' => "o-ok oniicchannn sorrrryyy!!! i wont bother you againnnnn"
+                        ];
+
+                        return Request::sendMessage($data);
+                    }
+                }
+            }
+
             $CoffeeHouse = new CoffeeHouse();
 
             $i = 'i';
@@ -176,6 +229,38 @@
                 {
 			        $Output = $Bot->think($this->getMessage()->getText(true));
 		        }
+            }
+
+            if($LydiaChanEnabled)
+            {
+                $faces = ["(・`ω´・)", ";;w;;", "owo", "UwU", ">w<", "^w^"];
+                $Output = str_replace('ove', 'uv', $Output);
+                $Output = str_replace('r', 'w', $Output);
+                $Output = str_replace('R', 'W', $Output);
+                $Output = str_replace('.', '..', $Output);
+                $Output = str_replace('!', '!!', $Output);
+                $Output = str_ireplace('brother', 'onichan', $Output);
+                $Output = str_ireplace('hi', 'hiiii', $Output);
+                $Output = str_ireplace('hello', 'hewweoo--owo', $Output);
+                $Output = str_ireplace(',', ',,', $Output);
+                $Output = str_ireplace('lydia', 'lydiachan', $Output);
+                $Output = str_ireplace(':(', ';-;', $Output);
+                $Output = str_ireplace(':)', ':3', $Output);
+                $Output = str_ireplace('lol', 'wow', $Output);
+                $Output = str_ireplace('', ':3', $Output);
+
+                $face = $faces[mt_rand(0, count($faces) - 1)];
+                if(rand(0, 100) < 40)
+                {
+                    if(rand(0, 100) > 40)
+                    {
+                        $Output = $face . ' ' . $Output;
+                    }
+                    else
+                    {
+                        $Output = $Output . ' ' . $face;
+                    }
+                }
             }
 
             $data = [
