@@ -71,7 +71,7 @@
             }
 
             $LydiaChanEnabled = false;
-            if($VerificationFailed != false)
+            if($VerificationFailed == false)
             {
                 if(isset($TelegramClient->SessionData->Data['lydiachan']))
                 {
@@ -270,6 +270,7 @@
             ];
 
             return Request::sendMessage($data);
+            
 
         }
     }
