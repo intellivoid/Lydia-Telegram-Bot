@@ -75,6 +75,8 @@
             $LydiaChanEnabled = false;
             if($VerificationFailed == false)
             {
+                $DeepAnalytics->tallyMonthly("tg_lydia", "messages", 0);
+                $DeepAnalytics->tallyHourly("tg_lydia", "messages", 0);
                 $DeepAnalytics->tallyMonthly("tg_lydia", "messages", (int)$TelegramClient->getChatId());
                 $DeepAnalytics->tallyHourly("tg_lydia", "messages", (int)$TelegramClient->getChatId());
 
@@ -274,11 +276,11 @@
                 'text' => $Output . "\n\n"
             ];
 
+            $DeepAnalytics->tallyMonthly("tg_lydia", "ai_responses", 0);
+            $DeepAnalytics->tallyHourly("tg_lydia", "ai_responses", 0);
             $DeepAnalytics->tallyMonthly("tg_lydia", "ai_responses", (int)$TelegramClient->getChatId());
             $DeepAnalytics->tallyHourly("tg_lydia", "ai_responses", (int)$TelegramClient->getChatId());
 
             return Request::sendMessage($data);
-            
-
         }
     }
