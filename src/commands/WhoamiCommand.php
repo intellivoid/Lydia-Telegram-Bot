@@ -53,7 +53,6 @@
         public function execute()
         {
             $TelegramClientManager = new TelegramClientManager();
-            $DeepAnalytics = new DeepAnalytics();
 
             try
             {
@@ -72,9 +71,6 @@
 
                 return Request::sendMessage($data);
             }
-
-            $DeepAnalytics->tallyMonthly("tg_lydia", "m_test", (int)$TelegramClient->getChatId());
-            $DeepAnalytics->tallyHourly("tg_lydia", "h_test", (int)$TelegramClient->getChatId());
 
             Request::sendChatAction([
                 'chat_id' => $this->getMessage()->getChat()->getId(),

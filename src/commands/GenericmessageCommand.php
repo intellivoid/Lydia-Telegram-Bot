@@ -7,6 +7,7 @@
     use CoffeeHouse\Exceptions\BotSessionException;
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
+    use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\SystemCommand;
@@ -51,6 +52,7 @@
         public function execute()
         {
             $TelegramClientManager = new TelegramClientManager();
+            $DeepAnalytics = new DeepAnalytics();
             $VerificationFailed = false;
 
             try
@@ -73,6 +75,9 @@
             $LydiaChanEnabled = false;
             if($VerificationFailed == false)
             {
+                $DeepAnalytics->tallyMonthly("tg_lydia", "messages", (int)$TelegramClient->getChatId());
+                $DeepAnalytics->tallyHourly("tg_lydia", "messages", (int)$TelegramClient->getChatId());
+
                 if(isset($TelegramClient->SessionData->Data['lydiachan']))
                 {
                     if($TelegramClient->SessionData->Data['lydiachan'])
@@ -268,6 +273,9 @@
                 'reply_to_message_id' => $this->getMessage()->getMessageId(),
                 'text' => $Output . "\n\n"
             ];
+
+            $DeepAnalytics->tallyMonthly("tg_lydia", "ai_responses", (int)$TelegramClient->getChatId());
+            $DeepAnalytics->tallyHourly("tg_lydia", "ai_responses", (int)$TelegramClient->getChatId());
 
             return Request::sendMessage($data);
             
