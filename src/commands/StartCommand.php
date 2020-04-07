@@ -2,6 +2,7 @@
 
     namespace Longman\TelegramBot\Commands\SystemCommands;
 
+    use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\Commands\SystemCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
@@ -55,7 +56,7 @@
 
             try
             {
-                $TelegramClientManager->getTelegramClientManager()->registerClient(
+                $TelegramClient = $TelegramClientManager->getTelegramClientManager()->registerClient(
                     Chat::fromArray($this->getMessage()->getChat()->getRawData()),
                     User::fromArray($this->getMessage()->getFrom()->getRawData())
                 );
@@ -70,6 +71,10 @@
 
                 return Request::sendMessage($data);
             }
+
+            $DeepAnalytics = new DeepAnalytics();
+            $DeepAnalytics->tally('tg_lydia', 'messages', 0);
+            $DeepAnalytics->tally('tg_lydia', 'messages', (int)$TelegramClient->getChatId());
 
             $data = [
                 'chat_id' => $this->getMessage()->getChat()->getId(),

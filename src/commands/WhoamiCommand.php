@@ -1,6 +1,7 @@
 <?php
 
     namespace Longman\TelegramBot\Commands\SystemCommands;
+    use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\SystemCommand;
@@ -71,7 +72,6 @@
                 return Request::sendMessage($data);
             }
 
-
             Request::sendChatAction([
                 'chat_id' => $this->getMessage()->getChat()->getId(),
                 'action' => ChatAction::TYPING
@@ -79,6 +79,10 @@
 
             $TelegramClientData = $TelegramClient->toArray();
             $TelegramClientData['id'] = hash('sha256', $TelegramClient->ID . 'IV');
+
+            $DeepAnalytics = new DeepAnalytics();
+            $DeepAnalytics->tally('tg_lydia', 'messages', 0);
+            $DeepAnalytics->tally('tg_lydia', 'messages', (int)$TelegramClient->getChatId());
 
             /** @noinspection PhpComposerExtensionStubsInspection */
             $data = [

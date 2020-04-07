@@ -8,6 +8,7 @@
     use CoffeeHouse\Exceptions\DatabaseException;
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
+    use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\SystemCommand;
@@ -86,6 +87,10 @@
             }
 
             $CoffeeHouse = new CoffeeHouse();
+            $DeepAnalytics = new DeepAnalytics();
+
+            $DeepAnalytics->tally('tg_lydia', 'messages', 0);
+            $DeepAnalytics->tally('tg_lydia', 'messages', (int)$TelegramClient->getChatId());
 
             if(strlen($this->getMessage()->getText(true)) == 0)
             {
@@ -125,6 +130,8 @@
                 $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
 
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
             }
             else
             {
@@ -134,6 +141,9 @@
                     $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
                     $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                     $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+
+                    $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                    $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
                 }
             }
 
@@ -151,9 +161,15 @@
                 $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
 
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
+
                 // Rethink the output
                 $Output = $Bot->think($this->getMessage()->getText(true));
             }
+
+            $DeepAnalytics->tally('tg_lydia', 'ai_responses', 0);
+            $DeepAnalytics->tally('tg_lydia', 'ai_responses', (int)$TelegramClient->getChatId());
 
             $data = [
                 'chat_id' => $this->getMessage()->getChat()->getId(),

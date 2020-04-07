@@ -7,6 +7,7 @@
     use CoffeeHouse\Exceptions\BotSessionException;
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
+    use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\SystemCommand;
@@ -85,14 +86,17 @@
                 return Request::sendMessage($data);
             }
 
-
             Request::sendChatAction([
                 'chat_id' => $this->getMessage()->getChat()->getId(),
                 'action' => ChatAction::TYPING
             ]);
 
             $CoffeeHouse = new CoffeeHouse();
+            $DeepAnalytics = new DeepAnalytics();
             $Bot = new Cleverbot($CoffeeHouse);
+
+            $DeepAnalytics->tally('tg_lydia', 'messages', 0);
+            $DeepAnalytics->tally('tg_lydia', 'messages', (int)$TelegramClient->getChatId());
 
             if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
             {
@@ -114,6 +118,8 @@
                 $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
 
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
             }
             else
             {
@@ -124,6 +130,9 @@
                     $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
                     $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                     $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+
+                    $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                    $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
                 }
                 else
                 {
