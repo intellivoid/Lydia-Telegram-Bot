@@ -7,6 +7,7 @@
     use CoffeeHouse\Exceptions\BotSessionException;
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
+    use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\SystemCommand;
@@ -92,6 +93,7 @@
             ]);
 
             $CoffeeHouse = new CoffeeHouse();
+            $DeepAnalytics = new DeepAnalytics();
             $Bot = new Cleverbot($CoffeeHouse);
 
             if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
@@ -114,6 +116,8 @@
                 $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
 
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
             }
             else
             {
@@ -124,6 +128,9 @@
                     $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
                     $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                     $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+
+                    $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                    $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
                 }
                 else
                 {
