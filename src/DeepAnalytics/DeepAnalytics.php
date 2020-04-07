@@ -81,6 +81,29 @@
         }
 
         /**
+         * Tallies both hourly and monthly and returns an array with 'hourly' and 'monthly'
+         *
+         * @param string $collection
+         * @param string $name
+         * @param int|null $reference_id
+         * @param int $amount
+         * @param int|null $year
+         * @param int|null $month
+         * @param int|null $day
+         * @return array
+         */
+        public function tally(string $collection, string $name, int $reference_id=null, int $amount=1,
+                              int $year=null, int $month=null, int $day=null): array
+        {
+            $Results = array();
+
+            $Results['hourly'] = $this->tallyHourly($collection, $name, $reference_id, $amount, $year, $month, $day);
+            $Results['monthly'] = $this->tallyMonthly($collection, $name, $reference_id, $amount, $year, $month);
+
+            return $Results;
+        }
+
+        /**
          * Tallies an hourly rating
          *
          * @param string $collection
