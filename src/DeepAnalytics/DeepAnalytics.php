@@ -186,7 +186,7 @@
             {
                 $HourlyData = Utilities::BSONDocumentToHourlyData($Document);
 
-                $HourlyData->tally($amount, 7);
+                $HourlyData->tally($amount);
                 $HourlyData->LastUpdated = (int)time();
                 $HourlyDataDocument = $HourlyData->toArray();
                 unset($HourlyDataDocument["id"]);
