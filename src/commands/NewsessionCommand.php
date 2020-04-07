@@ -86,7 +86,6 @@
                 return Request::sendMessage($data);
             }
 
-
             Request::sendChatAction([
                 'chat_id' => $this->getMessage()->getChat()->getId(),
                 'action' => ChatAction::TYPING
@@ -95,6 +94,9 @@
             $CoffeeHouse = new CoffeeHouse();
             $DeepAnalytics = new DeepAnalytics();
             $Bot = new Cleverbot($CoffeeHouse);
+
+            $DeepAnalytics->tally('tg_lydia', 'messages', 0);
+            $DeepAnalytics->tally('tg_lydia', 'messages', (int)$TelegramClient->getChatId());
 
             if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
             {
