@@ -60,6 +60,13 @@
         public $Data;
 
         /**
+         * The total amount calculated from all the data
+         *
+         * @var int
+         */
+        public $Total;
+
+        /**
          * The Unix Timestamp when this record was last updated
          *
          * @var int
@@ -128,6 +135,8 @@
 
                 $this->Data[$hour] += $amount;
             }
+
+            $this->Total = Utilities::calculateTotal($this->Data);
         }
 
         /**
@@ -145,6 +154,7 @@
                 'stamp' => $this->Stamp,
                 'month_stamp' => $this->MonthStamp,
                 'data' => $this->Data,
+                'total' => (int)$this->Total,
                 'last_updated' => (int)$this->LastUpdated,
                 'created' => (int)$this->Created
             );
@@ -160,6 +170,7 @@
         {
             $HourlyDataObject = new HourlyData();
 
+            /** @noinspection DuplicatedCode */
             if(isset($data['id']))
             {
                 if(is_null($data['id']) == false)
@@ -206,6 +217,11 @@
                 $HourlyDataObject->Data = $data['data'];
             }
 
+            if(isset($data['total']))
+            {
+                $HourlyDataObject->Total = (int)$data['total'];
+            }
+
             if(isset($data['last_updated']))
             {
                 $HourlyDataObject->LastUpdated = (int)$data['last_updated'];
@@ -217,5 +233,28 @@
             }
 
             return $HourlyDataObject;
+        }
+
+        /**
+         * Returns the data, optionally formatted.
+         *
+         * @param bool $formatted
+         * @return array
+         */
+        public function getData(bool $formatted=true): array
+        {
+            if($formatted)
+            {
+                $Results = array();
+
+                foreach($this->Data as $key => $value)
+                {
+                    $Results["$key:00"] = $value;
+                }
+
+                return $Results;
+            }
+
+            return $this->Data;
         }
     }

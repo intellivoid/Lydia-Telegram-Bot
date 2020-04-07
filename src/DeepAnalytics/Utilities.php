@@ -51,12 +51,12 @@
 
             while(true)
             {
-                if($current_count > 24)
+                if($current_count > 23)
                 {
                     break;
                 }
 
-                $results[$current_count] = 0;
+                $results[(int)$current_count] = 0;
                 $current_count += 1;
             }
 
@@ -83,11 +83,11 @@
             }
 
             $last = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-            $results = Array();
+            $results = array();
 
             for ($day=1; $day<=$last; $day++)
             {
-                $results[$day] = 0;
+                $results[(int)$day - 1] = 0;
             }
 
             return $results;
@@ -153,5 +153,67 @@
             }
 
             return $DateObject;
+        }
+
+        /**
+         * Calculates the total from an array
+         *
+         * @param array $data
+         * @return int
+         */
+        static function calculateTotal(array $data): int
+        {
+            $Results = 0;
+
+            foreach($data as $value)
+            {
+                $Results += (int)$value;
+            }
+
+            return $Results;
+        }
+
+        /**
+         * Generates a full month stamp such as "year-month-day"
+         *
+         * @param Date $date
+         * @param int $day
+         * @return string
+         */
+        static function generateFullMonthStamp(Date $date, int $day): string
+        {
+            $stamp = $date->Year . '-';
+            $stamp .= $date->Month . '-';
+            $stamp .= $day;
+
+            return $stamp;
+        }
+
+        /**
+         * Generates a full hour stamp such as "year-month-day hour:00"
+         *
+         * @param Date $date
+         * @param string|int $hour
+         * @return string
+         */
+        static function generateFullHourStamp(Date $date, $hour): string
+        {
+            $stamp = $date->Year . '-';
+            $stamp .= $date->Month . '-';
+            $stamp .= $date->Day . ' ';
+
+            if(is_int($hour))
+            {
+                if($hour < 10)
+                {
+                    $hour = "0$hour";
+                }
+
+                $hour = "$hour:00";
+            }
+
+            $stamp .= $hour;
+
+            return $stamp;
         }
     }

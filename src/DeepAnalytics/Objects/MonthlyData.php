@@ -54,6 +54,13 @@
         public $Data;
 
         /**
+         * The total combined from data
+         *
+         * @var int
+         */
+        public $Total;
+
+        /**
          * The Unix Timestamp when this record was last updated
          *
          * @var int
@@ -104,17 +111,19 @@
             if(is_null($day))
             {
                 $day = (int)date('j');
-                $this->Data[$day] += $amount;
+                $this->Data[(int)$day - 1] += $amount;
             }
             else
             {
-                if(isset($this->Data[$day]) == false)
+                if(isset($this->Data[(int)$day]) == false)
                 {
-                    throw new InvalidArgumentException("The given day must be a value between 1 and " . count($this->Data));
+                    throw new InvalidArgumentException("The given day must be a value between 1 and " . (count($this->Data) +1));
                 }
 
-                $this->Data[$day] += $amount;
+                $this->Data[(int)$day - 1] += $amount;
             }
+
+            $this->Total = Utilities::calculateTotal($this->Data);
         }
 
         /**
@@ -131,6 +140,7 @@
                 'date' => $this->Date->toArray(false),
                 'stamp' => $this->Stamp,
                 'data' => $this->Data,
+                'total' => (int)$this->Total,
                 'last_updated' => (int)$this->LastUpdated,
                 'created' => (int)$this->Created
             );
@@ -187,6 +197,11 @@
                 $MonthlyDataObject->Data = $data['data'];
             }
 
+            if(isset($data['total']))
+            {
+                $MonthlyDataObject->Total = (int)$data['total'];
+            }
+
             if(isset($data['last_updated']))
             {
                 $MonthlyDataObject->LastUpdated = (int)$data['last_updated'];
@@ -198,5 +213,34 @@
             }
 
             return $MonthlyDataObject;
+        }
+
+        /**
+         * Returns the data, optionally formatted.
+         *
+         * @param bool $formatted
+         * @return array
+         */
+        public function getData(bool $formatted=true): array
+        {
+            if($formatted)
+            {
+                $Results = array();
+
+                foreach($this->Data as $key => $value)
+                {
+                    $key += 1;
+                    if($key < 10)
+                    {
+                        $key = "0$key";
+                    }
+
+                    $Results[(string)$key] = $value;
+                }
+
+                return $Results;
+            }
+
+            return $this->Data;
         }
     }
