@@ -75,10 +75,8 @@
             $LydiaChanEnabled = false;
             if($VerificationFailed == false)
             {
-                $DeepAnalytics->tallyMonthly("tg_lydia", "messages", 0);
-                $DeepAnalytics->tallyHourly("tg_lydia", "messages", 0);
-                $DeepAnalytics->tallyMonthly("tg_lydia", "messages", (int)$TelegramClient->getChatId());
-                $DeepAnalytics->tallyHourly("tg_lydia", "messages", (int)$TelegramClient->getChatId());
+                $DeepAnalytics->tally('tg_lydia', 'messages', 0);
+                $DeepAnalytics->tally('tg_lydia', 'messages', (int)$TelegramClient->getChatId());
 
                 if(isset($TelegramClient->SessionData->Data['lydiachan']))
                 {
@@ -194,6 +192,8 @@
                 $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
 
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
             }
             else
             {
@@ -203,6 +203,9 @@
                     $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
                     $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                     $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+
+                    $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                    $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
                 }
             }
 
@@ -226,6 +229,9 @@
                 $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
                 $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
                 $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
 
                 // Rethink the output
                 if($this->getMessage()->getText(true) == NULL)
@@ -270,16 +276,14 @@
                 }
             }
 
+            $DeepAnalytics->tally('tg_lydia', 'ai_responses', 0);
+            $DeepAnalytics->tally('tg_lydia', 'ai_responses', (int)$TelegramClient->getChatId());
+
             $data = [
                 'chat_id' => $this->getMessage()->getChat()->getId(),
                 'reply_to_message_id' => $this->getMessage()->getMessageId(),
                 'text' => $Output . "\n\n"
             ];
-
-            $DeepAnalytics->tallyMonthly("tg_lydia", "ai_responses", 0);
-            $DeepAnalytics->tallyHourly("tg_lydia", "ai_responses", 0);
-            $DeepAnalytics->tallyMonthly("tg_lydia", "ai_responses", (int)$TelegramClient->getChatId());
-            $DeepAnalytics->tallyHourly("tg_lydia", "ai_responses", (int)$TelegramClient->getChatId());
 
             return Request::sendMessage($data);
         }
