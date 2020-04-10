@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 
     namespace DeepAnalytics;
@@ -119,17 +119,17 @@
         public function tallyHourly(string $collection, string $name, int $reference_id=null, int $amount=1,
                                     int $year=null, int $month=null, int $day=null, bool $throw_dup=false): HourlyData
         {
+            if(is_null($reference_id))
+            {
+                $reference_id = 0;
+            }
+
             $HourlyData = new HourlyData($year, $month, $day);
             $HourlyData->ReferenceID = $reference_id;
             $HourlyData->Name = $name;
 
             $Collection = $this->Database->selectCollection($collection . '_hourly');
             $Document = null;
-
-            if(is_null($reference_id))
-            {
-                $reference_id = 0;
-            }
 
             $Document = $Collection->findOne([
                 "stamp" => $HourlyData->Stamp,
@@ -208,6 +208,7 @@
          * @param int|null $reference_id
          * @param int $limit
          * @return array
+         * @noinspection DuplicatedCode
          */
         public function getHourlyDataRange(string $collection, string $name, int $reference_id=null, $limit=100): array
         {
@@ -259,13 +260,14 @@
          * @param string $collection
          * @param string $name
          * @param int|null $reference_id
+         * @param bool $throw_exception
          * @param int|null $year
          * @param int|null $month
          * @param int|null $day
          * @return HourlyData
          * @throws DataNotFoundException
          */
-        public function getHourlyData(string $collection, string $name, int $reference_id=null,
+        public function getHourlyData(string $collection, string $name, int $reference_id=null, bool $throw_exception=true,
                                       int $year=null, int $month=null, int $day=null): HourlyData
         {
             $Collection = $this->Database->selectCollection($collection . '_hourly');
@@ -284,7 +286,17 @@
 
             if(is_null($Document))
             {
-                throw new DataNotFoundException("The requested hourly rating data was not found.");
+                if($throw_exception)
+                {
+                    throw new DataNotFoundException("The requested hourly rating data was not found.");
+                }
+
+                $HourlyData = new HourlyData($year, $month, $day);
+                $HourlyData->ID = null;
+                $HourlyData->ReferenceID = $reference_id;
+                $HourlyData->Name = $name;
+
+                return $HourlyData;
             }
 
             return Utilities::BSONDocumentToHourlyData($Document);
@@ -295,10 +307,11 @@
          *
          * @param string $collection
          * @param string $id
+         * @param bool $throw_exception
          * @return HourlyData
          * @throws DataNotFoundException
          */
-        public function getHourlyDataById(string $collection, string $id): HourlyData
+        public function getHourlyDataById(string $collection, string $id, bool $throw_exception=true): HourlyData
         {
             $Collection = $this->Database->selectCollection($collection . '_hourly');
 
@@ -308,7 +321,17 @@
 
             if(is_null($Document))
             {
-                throw new DataNotFoundException("The requested hourly rating data was not found.");
+                if($throw_exception)
+                {
+                    throw new DataNotFoundException("The requested hourly rating data was not found.");
+                }
+
+                $HourlyData = new HourlyData();
+                $HourlyData->ID = null;
+                $HourlyData->ReferenceID = null;
+                $HourlyData->Name = null;
+
+                return $HourlyData;
             }
 
             return Utilities::BSONDocumentToHourlyData($Document);
@@ -329,17 +352,17 @@
         public function tallyMonthly(string $collection, string $name, int $reference_id=null, int $amount=1,
                                     int $year=null, int $month=null, bool $throw_dup=false): MonthlyData
         {
+            if(is_null($reference_id))
+            {
+                $reference_id = 0;
+            }
+
             $MonthlyData = new MonthlyData($year, $month);
             $MonthlyData->ReferenceID = $reference_id;
             $MonthlyData->Name = $name;
 
             $Collection = $this->Database->selectCollection($collection . '_monthly');
             $Document = null;
-
-            if(is_null($reference_id))
-            {
-                $reference_id = 0;
-            }
 
             $Document = $Collection->findOne([
                 "stamp" => $MonthlyData->Stamp,
@@ -418,6 +441,7 @@
          * @param int|null $reference_id
          * @param int $limit
          * @return array
+         * @noinspection DuplicatedCode
          */
         public function getMonthlyDataRange(string $collection, string $name, int $reference_id=null, $limit=100): array
         {
@@ -465,26 +489,26 @@
 
         /**
          * Returns the monthly data by content pointers
-         * 
+         *
          * @param string $collection
          * @param string $name
          * @param int|null $reference_id
+         * @param bool $throw_exception
          * @param int|null $year
          * @param int|null $month
-         * @param int|null $day
          * @return MonthlyData
          * @throws DataNotFoundException
          */
-        public function getMonthlyData(string $collection, string $name, int $reference_id=null,
+        public function getMonthlyData(string $collection, string $name, int $reference_id=null, bool $throw_exception=true,
                                       int $year=null, int $month=null): MonthlyData
         {
-            $Collection = $this->Database->selectCollection($collection . '_monthly');
-            $DateObject = Utilities::constructDate($year, $month);
-
             if(is_null($reference_id))
             {
                 $reference_id = 0;
             }
+
+            $Collection = $this->Database->selectCollection($collection . '_monthly');
+            $DateObject = Utilities::constructDate($year, $month);
 
             $Document = $Collection->findOne([
                 "stamp" => $DateObject->getMonthStamp(),
@@ -494,19 +518,32 @@
 
             if(is_null($Document))
             {
-                throw new DataNotFoundException("The requested monthly rating data was not found.");
+                if($throw_exception)
+                {
+                    throw new DataNotFoundException("The requested monthly rating data was not found.");
+                }
+
+                $MonthlyData = new MonthlyData($year, $month);
+                $MonthlyData->ReferenceID = $reference_id;
+                $MonthlyData->Name = $name;
+                $MonthlyData->ID = null;
+
+                return $MonthlyData;
             }
 
             return Utilities::BSONDocumentToMonthlyData($Document);
         }
 
         /**
+         * Returns monthly data by ID
+         *
          * @param string $collection
          * @param string $id
+         * @param bool $throw_exception
          * @return MonthlyData
          * @throws DataNotFoundException
          */
-        public function getMonthlyDataById(string $collection, string $id): MonthlyData
+        public function getMonthlyDataById(string $collection, string $id, bool $throw_exception=true): MonthlyData
         {
             $Collection = $this->Database->selectCollection($collection . '_monthly');
 
@@ -516,7 +553,17 @@
 
             if(is_null($Document))
             {
-                throw new DataNotFoundException("The requested monthly rating data was not found.");
+                if($throw_exception)
+                {
+                    throw new DataNotFoundException("The requested monthly rating data was not found.");
+                }
+
+                $MonthlyData = new MonthlyData();
+                $MonthlyData->ReferenceID = null;
+                $MonthlyData->Name = null;
+                $MonthlyData->ID = null;
+
+                return $MonthlyData;
             }
 
             return Utilities::BSONDocumentToMonthlyData($Document);
