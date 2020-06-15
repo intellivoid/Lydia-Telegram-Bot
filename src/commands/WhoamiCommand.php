@@ -54,22 +54,40 @@
         {
             $TelegramClientManager = new TelegramClientManager();
 
+            $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
+            $UserObject = User::fromArray($this->getMessage()->getFrom()->getRawData());
+
             try
             {
-                $TelegramClient = $TelegramClientManager->getTelegramClientManager()->registerClient(
-                    Chat::fromArray($this->getMessage()->getChat()->getRawData()),
-                    User::fromArray($this->getMessage()->getFrom()->getRawData())
-                );
+                $TelegramClient = $TelegramClientManager->getTelegramClientManager()->registerClient($ChatObject, $UserObject);
+
+                // Define and update chat client
+                $ChatClient = $TelegramClientManager->getTelegramClientManager()->registerChat($ChatObject);
+                $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
+
+                // Define and update user client
+                $UserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($UserObject);
+                $TelegramClientManager->getTelegramClientManager()->updateClient($UserClient);
+
+                // Define and update the forwarder if available
+                if($this->getMessage()->getForwardFrom() !== null)
+                {
+                    $ForwardUserObject = User::fromArray($this->getMessage()->getForwardFrom()->getRawData());
+                    $ForwardUserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($ForwardUserObject);
+                    $TelegramClientManager->getTelegramClientManager()->updateClient($ForwardUserClient);
+                }
             }
             catch(Exception $e)
             {
-                $data = [
-                    'chat_id' => $this->getMessage()->getChat()->getId(),
-                    'reply_to_message_id' => $this->getMessage()->getMessageId(),
-                    'text' => "Oops! Something went wrong! contact someone in @IntellivoidDev"
-                ];
-
-                return Request::sendMessage($data);
+                return Request::sendMessage([
+                    "chat_id" => $this->getMessage()->getChat()->getId(),
+                    "reply_to_message_id" => $this->getMessage()->getMessageId(),
+                    "parse_mode" => "html",
+                    "text" =>
+                        "Oops! Something went wrong! contact someone in @IntellivoidDiscussions\n\n" .
+                        "Error Code: <code>" . $e->getCode() . "</code>\n" .
+                        "Object: <code>Commands/whoami.bin</code>"
+                ]);
             }
 
             Request::sendChatAction([
