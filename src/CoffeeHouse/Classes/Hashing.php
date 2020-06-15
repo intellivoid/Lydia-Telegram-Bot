@@ -47,14 +47,40 @@
         /**
          * Creates a foreign session id
          *
-         * @param string $vars
          * @param string $language
          * @param int $time
          * @return string
          */
-        public static function foreignSessionId(string $language, int $time)
+        public static function foreignSessionId(string $language, int $time): string
         {
             $vars_c = hash('sha256', self::pepper($time) . $language);
             return hash('sha256', $vars_c . $time);
+        }
+
+        /**
+         * Hashes a input using SHA256
+         *
+         * @param string $input
+         * @return string
+         */
+        public static function input(string $input): string
+        {
+            return hash('sha256', $input);
+        }
+
+        /**
+         * Generates a unique classification public ID
+         *
+         * @param int $timestamp
+         * @param int $size
+         * @return string
+         */
+        public static function generalizedClassificationPublicId(int $timestamp, int $size): string
+        {
+            $time_pepper = self::pepper((string)$timestamp);
+            $size_pepper = self::pepper((string)$size);
+            $combined = self::pepper($time_pepper . $size_pepper);
+
+            return hash('sha256', $time_pepper . $size_pepper . $combined);
         }
     }
