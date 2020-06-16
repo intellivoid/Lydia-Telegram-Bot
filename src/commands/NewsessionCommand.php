@@ -10,6 +10,7 @@
     use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\Commands\SystemCommand;
+    use Longman\TelegramBot\Commands\UserCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
@@ -23,7 +24,7 @@
      *
      * Gets executed when a user sends /newsession
      */
-    class NewsessionCommand extends SystemCommand
+    class NewsessionCommand extends UserCommand
     {
         /**
          * @var string
@@ -74,11 +75,9 @@
 
                 // Define and update chat client
                 $ChatClient = $TelegramClientManager->getTelegramClientManager()->registerChat($ChatObject);
-                $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
 
                 // Define and update user client
                 $UserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($UserObject);
-                $TelegramClientManager->getTelegramClientManager()->updateClient($UserClient);
 
                 // Define and update the forwarder if available
                 if($this->getMessage()->getForwardFrom() !== null)

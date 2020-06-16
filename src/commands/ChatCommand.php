@@ -80,18 +80,15 @@
 
                 // Define and update chat client
                 $ChatClient = $TelegramClientManager->getTelegramClientManager()->registerChat($ChatObject);
-                $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
 
                 // Define and update user client
                 $UserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($UserObject);
-                $TelegramClientManager->getTelegramClientManager()->updateClient($UserClient);
 
                 // Define and update the forwarder if available
                 if($this->getMessage()->getForwardFrom() !== null)
                 {
                     $ForwardUserObject = User::fromArray($this->getMessage()->getForwardFrom()->getRawData());
                     $ForwardUserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($ForwardUserObject);
-                    $TelegramClientManager->getTelegramClientManager()->updateClient($ForwardUserClient);
                 }
             }
             catch(Exception $e)
