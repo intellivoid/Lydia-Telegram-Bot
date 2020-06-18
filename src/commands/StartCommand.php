@@ -82,7 +82,7 @@
             }
             catch(Exception $e)
             {
-                $TelegramClientManager->getDatabase()->close();
+                //$TelegramClientManager->getDatabase()->close();
 
                 return Request::sendMessage([
                     "chat_id" => $this->getMessage()->getChat()->getId(),
@@ -95,7 +95,7 @@
                 ]);
             }
 
-            $TelegramClientManager->getDatabase()->close();
+            //$TelegramClientManager->getDatabase()->close();
             $DeepAnalytics = new DeepAnalytics();
             $DeepAnalytics->tally('tg_lydia', 'messages', 0);
             $DeepAnalytics->tally('tg_lydia', 'messages', (int)$TelegramClient->getChatId());
