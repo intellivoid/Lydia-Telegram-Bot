@@ -64,6 +64,16 @@
         private $DatabaseConfiguration;
 
         /**
+         * @var mysqli
+         */
+        private $database;
+
+        /**
+         * @var acm
+         */
+        private $acm;
+
+        /**
          * TelegramClientManager constructor.
          * @throws Exception
          */
@@ -105,5 +115,13 @@
         public function getTelegramClientManager(): Managers\TelegramClientManager
         {
             return $this->TelegramClientManager;
+        }
+
+        /**
+         * @return mysqli
+         */
+        public function getDatabase(): mysqli
+        {
+            return $this->database;
         }
     }

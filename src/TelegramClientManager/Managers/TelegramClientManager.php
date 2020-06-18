@@ -73,18 +73,18 @@
                 unset($e);
             }
 
-            $PublicID = $this->telegramClientManager->database->real_escape_string($PublicID);
+            $PublicID = $this->telegramClientManager->getDatabase()->real_escape_string($PublicID);
             $Available = (int)true;
             $AccountID = 0;
             $User = ZiProto::encode($user->toArray());
-            $User = $this->telegramClientManager->database->real_escape_string($User);
+            $User = $this->telegramClientManager->getDatabase()->real_escape_string($User);
             $Chat = ZiProto::encode($chat->toArray());
-            $Chat = $this->telegramClientManager->database->real_escape_string($Chat);
+            $Chat = $this->telegramClientManager->getDatabase()->real_escape_string($Chat);
             $SessionData = new TelegramClient\SessionData();
             $SessionData = ZiProto::encode($SessionData->toArray());
-            $SessionData = $this->telegramClientManager->database->real_escape_string($SessionData);
-            $ChatID = $this->telegramClientManager->database->real_escape_string($chat->ID);
-            $UserID = $this->telegramClientManager->database->real_escape_string($user->ID);
+            $SessionData = $this->telegramClientManager->getDatabase()->real_escape_string($SessionData);
+            $ChatID = $this->telegramClientManager->getDatabase()->real_escape_string($chat->ID);
+            $UserID = $this->telegramClientManager->getDatabase()->real_escape_string($user->ID);
             $Username = null;
             $LastActivity = $CurrentTime;
             $Created = $CurrentTime;
@@ -93,12 +93,12 @@
             {
                 if($user->Username !== null)
                 {
-                    $Username = $this->telegramClientManager->database->real_escape_string($user->Username);
+                    $Username = $this->telegramClientManager->getDatabase()->real_escape_string($user->Username);
                 }
 
                 if($chat->Username !== null)
                 {
-                    $Username = $this->telegramClientManager->database->real_escape_string($chat->Username);
+                    $Username = $this->telegramClientManager->getDatabase()->real_escape_string($chat->Username);
                 }
             }
 
@@ -117,11 +117,11 @@
                 )
             );
 
-            $QueryResults = $this->telegramClientManager->database->query($Query);
+            $QueryResults = $this->telegramClientManager->getDatabase()->query($Query);
 
             if($QueryResults == false)
             {
-                throw new DatabaseException($Query, $this->telegramClientManager->database->error);
+                throw new DatabaseException($Query, $this->telegramClientManager->getDatabase()->error);
             }
 
             return $this->getClient(TelegramClientSearchMethod::byPublicId, $PublicID_og);
@@ -136,6 +136,7 @@
          * @throws DatabaseException
          * @throws InvalidSearchMethod
          * @throws TelegramClientNotFoundException
+         * @noinspection DuplicatedCode
          */
         public function getClient(string $search_method, string $value): TelegramClient
         {
@@ -143,20 +144,20 @@
             {
                 case TelegramClientSearchMethod::byId:
                 case TelegramClientSearchMethod::byAccountId:
-                    $search_method = $this->telegramClientManager->database->real_escape_string($search_method);
+                    $search_method = $this->telegramClientManager->getDatabase()->real_escape_string($search_method);
                     $value = (int)$value;
                     break;
 
                 case TelegramClientSearchMethod::byChatId:
                 case TelegramClientSearchMethod::byUserId:
-                    $search_method = $this->telegramClientManager->database->real_escape_string("public_id");
+                    $search_method = $this->telegramClientManager->getDatabase()->real_escape_string("public_id");
                     $value = Hashing::telegramClientPublicID((int)$value, (int)$value);
                     break;
 
                 case TelegramClientSearchMethod::byPublicId:
                 case TelegramClientSearchMethod::byUsername:
-                    $search_method =$this->telegramClientManager->database->real_escape_string($search_method);
-                    $value = $this->telegramClientManager->database->real_escape_string($value);;
+                    $search_method =$this->telegramClientManager->getDatabase()->real_escape_string($search_method);
+                    $value = $this->telegramClientManager->getDatabase()->real_escape_string($value);
                     break;
 
                 default:
@@ -178,16 +179,18 @@
                 'created'
             ], $search_method, $value, null, null, 1);
 
-            $QueryResults = $this->telegramClientManager->database->query($Query);
+            $QueryResults = $this->telegramClientManager->getDatabase()->query($Query);
 
             if($QueryResults == false)
             {
-                throw new DatabaseException($Query, $this->telegramClientManager->database->error);
+                $QueryResults->close();
+                throw new DatabaseException($Query, $this->telegramClientManager->getDatabase()->error);
             }
             else
             {
                 if($QueryResults->num_rows !== 1)
                 {
+                    $QueryResults->close();
                     throw new TelegramClientNotFoundException();
                 }
 
@@ -195,6 +198,7 @@
                 $Row['user'] = ZiProto::decode($Row['user']);
                 $Row['chat'] = ZiProto::decode($Row['chat']);
                 $Row['session_data'] = ZiProto::decode($Row['session_data']);
+                $QueryResults->close();
                 return TelegramClient::fromArray($Row);
             }
         }
@@ -207,6 +211,8 @@
          * @return array
          * @throws DatabaseException
          * @throws InvalidSearchMethod
+         * @noinspection DuplicatedCode
+         * @noinspection PhpUnused
          */
         public function getAssociatedClients(string $search_method, string $value): array
         {
@@ -214,20 +220,20 @@
             {
                 case TelegramClientSearchMethod::byId:
                 case TelegramClientSearchMethod::byAccountId:
-                    $search_method = $this->telegramClientManager->database->real_escape_string($search_method);
+                    $search_method = $this->telegramClientManager->getDatabase()->real_escape_string($search_method);
                     $value = (int)$value;
                     break;
 
                 case TelegramClientSearchMethod::byChatId:
                 case TelegramClientSearchMethod::byUserId:
-                    $search_method = $this->telegramClientManager->database->real_escape_string("public_id");
+                    $search_method = $this->telegramClientManager->getDatabase()->real_escape_string("public_id");
                     $value = Hashing::telegramClientPublicID((int)$value, (int)$value);
                     break;
 
                 case TelegramClientSearchMethod::byPublicId:
                 case TelegramClientSearchMethod::byUsername:
-                    $search_method =$this->telegramClientManager->database->real_escape_string($search_method);
-                    $value = $this->telegramClientManager->database->real_escape_string($value);;
+                    $search_method =$this->telegramClientManager->getDatabase()->real_escape_string($search_method);
+                    $value = $this->telegramClientManager->getDatabase()->real_escape_string($value);
                     break;
 
                 default:
@@ -249,10 +255,11 @@
                 'created'
             ], $search_method, $value);
 
-            $QueryResults = $this->telegramClientManager->database->query($Query);
+            $QueryResults = $this->telegramClientManager->getDatabase()->query($Query);
             if($QueryResults == false)
             {
-                throw new DatabaseException($this->telegramClientManager->database->error, $Query);
+                $QueryResults->close();
+                throw new DatabaseException($this->telegramClientManager->getDatabase()->error, $Query);
             }
             else
             {
@@ -266,6 +273,7 @@
                     $ResultsArray[] = TelegramClient::fromArray($Row);
                 }
 
+                $QueryResults->close();
                 return $ResultsArray;
             }
         }
@@ -276,6 +284,7 @@
          * @param TelegramClient $telegramClient
          * @return bool
          * @throws DatabaseException
+         * @throws InvalidSearchMethod
          */
         public function updateClient(TelegramClient $telegramClient): bool
         {
@@ -283,19 +292,19 @@
             $available = (int)$telegramClient->Available;
             $account_id = (int)$telegramClient->AccountID;
             $user = ZiProto::encode($telegramClient->User->toArray());
-            $user = $this->telegramClientManager->database->real_escape_string($user);
+            $user = $this->telegramClientManager->getDatabase()->real_escape_string($user);
             $chat = ZiProto::encode($telegramClient->Chat->toArray());
-            $chat = $this->telegramClientManager->database->real_escape_string($chat);
+            $chat = $this->telegramClientManager->getDatabase()->real_escape_string($chat);
             $session_data = ZiProto::encode($telegramClient->SessionData->toArray());
-            $session_data = $this->telegramClientManager->database->real_escape_string($session_data);
-            $chat_id = $this->telegramClientManager->database->real_escape_string($telegramClient->Chat->ID);
-            $user_id = $this->telegramClientManager->database->real_escape_string($telegramClient->User->ID);
+            $session_data = $this->telegramClientManager->getDatabase()->real_escape_string($session_data);
+            $chat_id = $this->telegramClientManager->getDatabase()->real_escape_string($telegramClient->Chat->ID);
+            $user_id = $this->telegramClientManager->getDatabase()->real_escape_string($telegramClient->User->ID);
             $username = null;
             $last_activity = (int)time();
 
             if($telegramClient->getUsername() !== null)
             {
-                $username =$this->telegramClientManager->database->real_escape_string($telegramClient->getUsername());
+                $username =$this->telegramClientManager->getDatabase()->real_escape_string($telegramClient->getUsername());
                 $this->fixDuplicateUsername($telegramClient->Chat, $telegramClient->User);
             }
 
@@ -310,7 +319,7 @@
                 'username' => $username,
                 'last_activity' => $last_activity
             ), 'id', $id);
-            $QueryResults = $this->telegramClientManager->database->query($Query);
+            $QueryResults = $this->telegramClientManager->getDatabase()->query($Query);
 
             if($QueryResults == true)
             {
@@ -318,7 +327,7 @@
             }
             else
             {
-                throw new DatabaseException($Query, $this->telegramClientManager->database->error);
+                throw new DatabaseException($Query, $this->telegramClientManager->getDatabase()->error);
             }
         }
 
@@ -330,6 +339,7 @@
          * @throws DatabaseException
          * @throws InvalidSearchMethod
          * @throws TelegramClientNotFoundException
+         * @noinspection PhpUnused
          */
         public function registerUser(User $user): TelegramClient
         {
@@ -352,6 +362,7 @@
          * @throws DatabaseException
          * @throws InvalidSearchMethod
          * @throws TelegramClientNotFoundException
+         * @noinspection PhpUnused
          */
         public function registerChat(Chat $chat): TelegramClient
         {
