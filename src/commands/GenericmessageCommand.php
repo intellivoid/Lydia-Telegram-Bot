@@ -96,13 +96,13 @@
                 return null;
             }
 
-            if(self::chance(3))
-            {
-                $DeepAnalytics->tally('tg_lydia', 'chance_hit', 0);
-                $DeepAnalytics->tally('tg_lydia', 'chance_hit', (int)$TelegramClient->getChatId());
-            }
-            else
-            {
+            //if(self::chance(3))
+            //{
+                //$DeepAnalytics->tally('tg_lydia', 'chance_hit', 0);
+                //$DeepAnalytics->tally('tg_lydia', 'chance_hit', (int)$TelegramClient->getChatId());
+            //}
+            //else
+            //{
                 if($this->getMessage()->getChat()->isGroupChat() || $this->getMessage()->getChat()->isSuperGroup())
                 {
                     if($this->getMessage()->getReplyToMessage() !== null)
@@ -122,7 +122,7 @@
                         return null;
                     }
                 }
-            }
+            //}
 
             $CoffeeHouse = new CoffeeHouse();
             $Bot = new Cleverbot($CoffeeHouse);
