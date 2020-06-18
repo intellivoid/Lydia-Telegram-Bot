@@ -166,7 +166,7 @@
             {
                 $TelegramClientManager->getDatabase()->close();
                 $CoffeeHouse->getDatabase()->close();
-                
+
                 return Request::sendMessage([
                     "chat_id" => $this->getMessage()->getChat()->getId(),
                     "reply_to_message_id" => $this->getMessage()->getMessageId(),
