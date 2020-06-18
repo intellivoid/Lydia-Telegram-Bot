@@ -154,9 +154,9 @@
                 else
                 {
                     return Request::sendMessage([
-                        'chat_id' => $this->getMessage()->getChat()->getId(),
-                        'reply_to_message_id' => $this->getMessage()->getMessageId(),
-                        'text' => "The session must be older than 60 seconds"
+                        "chat_id" => $this->getMessage()->getChat()->getId(),
+                        "reply_to_message_id" => $this->getMessage()->getMessageId(),
+                        "text" => "The session must be older than 60 seconds"
                     ]);
                 }
             }
