@@ -190,7 +190,6 @@
             {
                 if($QueryResults->num_rows !== 1)
                 {
-                    $QueryResults->close();
                     throw new TelegramClientNotFoundException();
                 }
 
@@ -198,7 +197,6 @@
                 $Row['user'] = ZiProto::decode($Row['user']);
                 $Row['chat'] = ZiProto::decode($Row['chat']);
                 $Row['session_data'] = ZiProto::decode($Row['session_data']);
-                $QueryResults->close();
                 return TelegramClient::fromArray($Row);
             }
         }
@@ -258,7 +256,6 @@
             $QueryResults = $this->telegramClientManager->getDatabase()->query($Query);
             if($QueryResults == false)
             {
-                $QueryResults->close();
                 throw new DatabaseException($this->telegramClientManager->getDatabase()->error, $Query);
             }
             else
@@ -273,7 +270,6 @@
                     $ResultsArray[] = TelegramClient::fromArray($Row);
                 }
 
-                $QueryResults->close();
                 return $ResultsArray;
             }
         }
