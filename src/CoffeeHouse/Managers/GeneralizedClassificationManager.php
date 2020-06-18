@@ -112,7 +112,7 @@
                 'current_pointer',
                 'last_updated',
                 'created'
-            ), $search_method, $value);
+            ), $search_method, $value, null, null, 1);
 
             $QueryResults = $this->coffeeHouse->getDatabase()->query($Query);
 
@@ -122,11 +122,13 @@
 
                 if ($Row == False)
                 {
+                    $QueryResults->close();
                     throw new GeneralizedClassificationNotFoundException();
                 }
                 else
                 {
                     $Row['data'] = ZiProto::decode($Row['data']);
+                    $QueryResults->close();
                     return(GeneralizedClassification::fromArray($Row));
                 }
             }

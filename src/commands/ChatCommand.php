@@ -1,5 +1,9 @@
 <?php
 
+    /** @noinspection PhpUnusedLocalVariableInspection */
+    /** @noinspection PhpUndefinedClassInspection */
+    /** @noinspection DuplicatedCode */
+
     namespace Longman\TelegramBot\Commands\SystemCommands;
 
     use CoffeeHouse\Bots\Cleverbot;
@@ -11,12 +15,10 @@
     use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\ChatAction;
-    use Longman\TelegramBot\Commands\SystemCommand;
+    use Longman\TelegramBot\Commands\UserCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
-    use TelegramClientManager\Exceptions\InvalidSearchMethod;
-    use TelegramClientManager\Exceptions\TelegramClientNotFoundException;
     use TelegramClientManager\Objects\TelegramClient\Chat;
     use TelegramClientManager\Objects\TelegramClient\User;
     use TelegramClientManager\TelegramClientManager;
@@ -24,9 +26,9 @@
     /**
      * Chat command
      *
-     * Gets executed when a user sends '/chat'
+     * Responds to a user using the /chat command
      */
-    class ChatCommand extends SystemCommand
+    class ChatCommand extends UserCommand
     {
         /**
          * @var string
@@ -36,7 +38,7 @@
         /**
          * @var string
          */
-        protected $description = 'Send a chat message to the bot';
+        protected $description = 'Responds to a user using the /chat command';
 
         /**
          * @var string
@@ -46,7 +48,7 @@
         /**
          * @var string
          */
-        protected $version = '1.0.0';
+        protected $version = '1.0.1';
 
         /**
          * @var bool
@@ -63,6 +65,7 @@
          * @throws InvalidSearchMethodException
          * @throws TelegramException
          * @throws \TelegramClientManager\Exceptions\DatabaseException
+         * @throws Exception
          */
         public function execute()
         {
@@ -77,22 +80,20 @@
 
                 // Define and update chat client
                 $ChatClient = $TelegramClientManager->getTelegramClientManager()->registerChat($ChatObject);
-                $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
 
                 // Define and update user client
                 $UserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($UserObject);
-                $TelegramClientManager->getTelegramClientManager()->updateClient($UserClient);
 
                 // Define and update the forwarder if available
                 if($this->getMessage()->getForwardFrom() !== null)
                 {
                     $ForwardUserObject = User::fromArray($this->getMessage()->getForwardFrom()->getRawData());
                     $ForwardUserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($ForwardUserObject);
-                    $TelegramClientManager->getTelegramClientManager()->updateClient($ForwardUserClient);
                 }
             }
             catch(Exception $e)
             {
+                $TelegramClientManager->getDatabase()->close();
                 return Request::sendMessage([
                     "chat_id" => $this->getMessage()->getChat()->getId(),
                     "reply_to_message_id" => $this->getMessage()->getMessageId(),
@@ -100,71 +101,75 @@
                     "text" =>
                         "Oops! Something went wrong! contact someone in @IntellivoidDiscussions\n\n" .
                         "Error Code: <code>" . $e->getCode() . "</code>\n" .
-                        "Object: <code>Commands/newsession.bin</code>"
+                        "Object: <code>Commands/chatcommand.bin</code>"
                 ]);
             }
 
-            $CoffeeHouse = new CoffeeHouse();
             $DeepAnalytics = new DeepAnalytics();
 
             $DeepAnalytics->tally('tg_lydia', 'messages', 0);
-            $DeepAnalytics->tally('tg_lydia', 'messages', (int)$TelegramClient->getChatId());
+            $DeepAnalytics->tally('tg_lydia', 'messages', (int)$ChatClient->getChatId());
 
             if(strlen($this->getMessage()->getText(true)) == 0)
             {
-                $data = [
-                    'chat_id' => $this->getMessage()->getChat()->getId(),
-                    'reply_to_message_id' => $this->getMessage()->getMessageId(),
-                    'text' => "Learn to use the chat command thx"
-                ];
-
-                return Request::sendMessage($data);
+                return Request::sendMessage([
+                    "chat_id" => $this->getMessage()->getChat()->getId(),
+                    "reply_to_message_id" => $this->getMessage()->getMessageId(),
+                    "parse_mode" => "html",
+                    "text" =>
+                        "That's not how you use the chat command!\n\n".
+                        "<code>/chat Hello</code>"
+                ]);
             }
 
             Request::sendChatAction([
-                'chat_id' => $this->getMessage()->getChat()->getId(),
-                'action' => ChatAction::TYPING
+                "chat_id" => $this->getMessage()->getChat()->getId(),
+                "action" => ChatAction::TYPING
             ]);
 
+            $CoffeeHouse = new CoffeeHouse();
             $Bot = new Cleverbot($CoffeeHouse);
 
-            if(isset($TelegramClient->SessionData->Data['lydia_default_language']) == false)
+            // Check the default language
+            if(isset($ChatClient->SessionData->Data['lydia_default_language']) == false)
             {
                 if(is_null($this->getMessage()->getFrom()->getLanguageCode()))
                 {
-                    $TelegramClient->SessionData->Data['lydia_default_language'] = 'en';
+                    $ChatClient->SessionData->Data['lydia_default_language'] = 'en';
                 }
                 else
                 {
-                    $TelegramClient->SessionData->Data['lydia_default_language'] = $this->getMessage()->getFrom()->getLanguageCode();
+                    $ChatClient->SessionData->Data['lydia_default_language'] = $this->getMessage()->getFrom()->getLanguageCode();
                 }
-                $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+                $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
             }
 
-            // Check if the Telegram Client has a session ID
-            if(isset($TelegramClient->SessionData->Data['lydia_session_id']) == false)
+            // Check if the Chat Client has a session ID
+            if(isset($ChatClient->SessionData->Data['lydia_session_id']) == false)
             {
-                $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
-                $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
-                $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+                $Bot->newSession($ChatClient->SessionData->Data['lydia_default_language']);
+                $ChatClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
+                $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
 
                 $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
-                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$ChatClient->getChatId());
             }
             else
             {
-                $Bot->loadSession($TelegramClient->SessionData->Data['lydia_session_id']);
+                // If not, create one
+                $Bot->loadSession($ChatClient->SessionData->Data['lydia_session_id']);
                 if((int)time() > $Bot->getSession()->Expires)
                 {
-                    $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
-                    $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
-                    $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+                    $Bot->newSession($ChatClient->SessionData->Data['lydia_default_language']);
+                    $ChatClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
+                    $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
 
                     $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
-                    $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
+                    $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$ChatClient->getChatId());
                 }
             }
 
+            // Finally, think a thought
             try
             {
                 $Output = $Bot->think($this->getMessage()->getText(true));
@@ -175,27 +180,28 @@
                 $Bot->getSession()->Available = false;
                 $CoffeeHouse->getForeignSessionsManager()->updateSession($Bot->getSession());
 
-                $Bot->newSession($TelegramClient->SessionData->Data['lydia_default_language']);
-                $TelegramClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
-                $TelegramClientManager->getTelegramClientManager()->updateClient($TelegramClient);
+                $Bot->newSession($ChatClient->SessionData->Data['lydia_default_language']);
+                $ChatClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
+                $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
 
                 $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
-                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$TelegramClient->getChatId());
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$ChatClient->getChatId());
 
                 // Rethink the output
                 $Output = $Bot->think($this->getMessage()->getText(true));
             }
 
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', 0);
-            $DeepAnalytics->tally('tg_lydia', 'ai_responses', (int)$TelegramClient->getChatId());
+            $DeepAnalytics->tally('tg_lydia', 'ai_responses', (int)$ChatClient->getChatId());
 
-            $data = [
-                'chat_id' => $this->getMessage()->getChat()->getId(),
-                'reply_to_message_id' => $this->getMessage()->getMessageId(),
-                'text' => $Output
-            ];
+            $CoffeeHouse->getDatabase()->close();
+            $TelegramClientManager->getDatabase()->close();
 
-            return Request::sendMessage($data);
+            return Request::sendMessage([
+                "chat_id" => $this->getMessage()->getChat()->getId(),
+                "reply_to_message_id" => $this->getMessage()->getMessageId(),
+                "text" => $Output
+            ]);
 
         }
     }
