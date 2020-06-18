@@ -1,5 +1,7 @@
 <?php
 
+    /** @noinspection PhpUndefinedClassInspection */
+
     namespace Longman\TelegramBot\Commands\SystemCommands;
 
     use DeepAnalytics\DeepAnalytics;
@@ -49,6 +51,7 @@
          *
          * @return ServerResponse
          * @throws TelegramException
+         * @noinspection DuplicatedCode
          */
         public function execute()
         {
@@ -62,12 +65,12 @@
                 $TelegramClient = $TelegramClientManager->getTelegramClientManager()->registerClient($ChatObject, $UserObject);
 
                 // Define and update chat client
+                /** @noinspection PhpUnusedLocalVariableInspection */
                 $ChatClient = $TelegramClientManager->getTelegramClientManager()->registerChat($ChatObject);
-                $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
 
                 // Define and update user client
+                /** @noinspection PhpUnusedLocalVariableInspection */
                 $UserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($UserObject);
-                $TelegramClientManager->getTelegramClientManager()->updateClient($UserClient);
 
                 // Define and update the forwarder if available
                 if($this->getMessage()->getForwardFrom() !== null)
@@ -94,15 +97,14 @@
             $DeepAnalytics->tally('tg_lydia', 'messages', 0);
             $DeepAnalytics->tally('tg_lydia', 'messages', (int)$TelegramClient->getChatId());
 
-            $data = [
-                'chat_id' => $this->getMessage()->getChat()->getId(),
-                'text' =>
+            return Request::sendMessage([
+                "chat_id" => $this->getMessage()->getChat()->getId(),
+                "reply_to_message_id" => $this->getMessage()->getMessageId(),
+                "text" =>
                     "Hi! I'm Lydia, a Machine Learning chat bot that isn't based off a crappy AI/ML library or service from Microsoft or any of the big companies.\n\n" .
                     "I'm based off a machine learning & artificial intelligence engine called CoffeeHouse! this whole project was created from scratch by @Intellivoid\n\n" .
                     "You can add me to groups and mention my name or talk to me here, we can talk about anything!"
-            ];
-
-            return Request::sendMessage($data);
+            ]);
 
         }
     }
