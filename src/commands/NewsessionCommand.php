@@ -97,7 +97,7 @@
             }
             catch(Exception $e)
             {
-                $TelegramClientManager->getDatabase()->close();
+                //$TelegramClientManager->getDatabase()->close();
                 return Request::sendMessage([
                     "chat_id" => $this->getMessage()->getChat()->getId(),
                     "reply_to_message_id" => $this->getMessage()->getMessageId(),
@@ -154,8 +154,8 @@
                 }
                 else
                 {
-                    $CoffeeHouse->getDatabase()->close();
-                    $TelegramClientManager->getDatabase()->close();
+                    //$CoffeeHouse->getDatabase()->close();
+                    //$TelegramClientManager->getDatabase()->close();
 
                     return Request::sendMessage([
                         "chat_id" => $this->getMessage()->getChat()->getId(),
@@ -165,8 +165,8 @@
                 }
             }
 
-            $CoffeeHouse->getDatabase()->close();
-            $TelegramClientManager->getDatabase()->close();
+            //$CoffeeHouse->getDatabase()->close();
+            //$TelegramClientManager->getDatabase()->close();
 
             return Request::sendMessage([
                 "chat_id" => $this->getMessage()->getChat()->getId(),

@@ -93,7 +93,7 @@
             }
             catch(Exception $e)
             {
-                $TelegramClientManager->getDatabase()->close();
+                //$TelegramClientManager->getDatabase()->close();
                 return Request::sendMessage([
                     "chat_id" => $this->getMessage()->getChat()->getId(),
                     "reply_to_message_id" => $this->getMessage()->getMessageId(),
@@ -194,8 +194,8 @@
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', 0);
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', (int)$ChatClient->getChatId());
 
-            $CoffeeHouse->getDatabase()->close();
-            $TelegramClientManager->getDatabase()->close();
+            //$CoffeeHouse->getDatabase()->close();
+            //$TelegramClientManager->getDatabase()->close();
 
             return Request::sendMessage([
                 "chat_id" => $this->getMessage()->getChat()->getId(),

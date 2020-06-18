@@ -83,7 +83,7 @@
             }
             catch(Exception $e)
             {
-                $TelegramClientManager->getDatabase()->close();
+                //$TelegramClientManager->getDatabase()->close();
                 return null;
             }
 
@@ -92,7 +92,7 @@
 
             if($this->getMessage() == null)
             {
-                $TelegramClientManager->getDatabase()->close();
+                //$TelegramClientManager->getDatabase()->close();
                 return null;
             }
 
@@ -111,14 +111,14 @@
                         {
                             if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== TELEGRAM_BOT_NAME)
                             {
-                                $TelegramClientManager->getDatabase()->close();
+                                //$TelegramClientManager->getDatabase()->close();
                                 return null;
                             }
                         }
                     }
                     elseif(stripos($this->getMessage()->getText(true), "lydia") == false)
                     {
-                        $TelegramClientManager->getDatabase()->close();
+                        //$TelegramClientManager->getDatabase()->close();
                         return null;
                     }
                 }
@@ -172,8 +172,8 @@
 
             if($this->getMessage()->getText(true) == null)
             {
-                $TelegramClientManager->getDatabase()->close();
-                $CoffeeHouse->getDatabase()->close();
+                //$TelegramClientManager->getDatabase()->close();
+                //$CoffeeHouse->getDatabase()->close();
 
                 return Request::sendMessage([
                     "chat_id" => $this->getMessage()->getChat()->getId(),
@@ -206,8 +206,8 @@
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', 0);
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', (int)$ChatClient->getChatId());
 
-            $TelegramClientManager->getDatabase()->close();
-            $CoffeeHouse->getDatabase()->close();
+            //$TelegramClientManager->getDatabase()->close();
+            //$CoffeeHouse->getDatabase()->close();
 
             return Request::sendMessage([
                 "chat_id" => $this->getMessage()->getChat()->getId(),
