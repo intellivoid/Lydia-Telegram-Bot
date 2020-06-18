@@ -93,7 +93,7 @@
             }
             catch(Exception $e)
             {
-                $TelegramClient->get
+                $TelegramClientManager->getDatabase()->close();
                 return Request::sendMessage([
                     "chat_id" => $this->getMessage()->getChat()->getId(),
                     "reply_to_message_id" => $this->getMessage()->getMessageId(),
@@ -105,7 +105,6 @@
                 ]);
             }
 
-            $CoffeeHouse = new CoffeeHouse();
             $DeepAnalytics = new DeepAnalytics();
 
             $DeepAnalytics->tally('tg_lydia', 'messages', 0);
@@ -128,6 +127,7 @@
                 "action" => ChatAction::TYPING
             ]);
 
+            $CoffeeHouse = new CoffeeHouse();
             $Bot = new Cleverbot($CoffeeHouse);
 
             // Check the default language
@@ -193,6 +193,9 @@
 
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', 0);
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', (int)$ChatClient->getChatId());
+
+            $CoffeeHouse->getDatabase()->close();
+            $TelegramClientManager->getDatabase()->close();
 
             return Request::sendMessage([
                 "chat_id" => $this->getMessage()->getChat()->getId(),
