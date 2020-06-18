@@ -51,6 +51,7 @@
          */
         public function execute()
         {
+            return null;
             $TelegramClientManager = new TelegramClientManager();
 
             $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
@@ -96,13 +97,6 @@
             $DeepAnalytics->tally('tg_spam_protection', 'new_member', 0);
             $DeepAnalytics->tally('tg_spam_protection', 'messages', (int)$TelegramClient->getChatId());
             $DeepAnalytics->tally('tg_spam_protection', 'new_member', (int)$TelegramClient->getChatId());
-
-            if(isset($this->getMessage()->getNewChatMembers()[0]))
-            {
-                $UserObject = User::fromArray($this->getMessage()->getNewChatMembers()[0]->getRawData());
-                $UserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($UserObject);
-                $TelegramClientManager->getTelegramClientManager()->updateClient($UserClient);
-            }
 
             if($UserObject->Username == "SpamProtectionBot")
             {
