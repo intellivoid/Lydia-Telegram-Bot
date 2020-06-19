@@ -65,7 +65,11 @@
     {
         try
         {
-            $result = $telegram->setWebhook($TelegramServiceConfiguration['WebHook']);
+            $result = $telegram->setWebhook($TelegramServiceConfiguration['WebHook'], array(
+                    'max_connections' => 100,
+                    'allowed_updates' => ["message"]
+                )
+            );
             if ($result->isOk())
             {
                 echo $result->getDescription();
