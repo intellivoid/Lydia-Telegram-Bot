@@ -55,7 +55,38 @@
          */
         public function execute()
         {
+            if($this->getMessage() == null)
+            {
+                return null;
+            }
+
+            if($this->getMessage()->getText(true) == null)
+            {
+                return null;
+            }
+
+            if(strlen($this->getMessage()->getText(true)) == 0)
+            {
+                return null;
+            }
+
+            if($this->getMessage()->getReplyToMessage() !== null)
+            {
+                if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== null)
+                {
+                    if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== TELEGRAM_BOT_NAME)
+                    {
+                        return null;
+                    }
+                }
+            }
+            elseif(stripos($this->getMessage()->getText(true), "lydia") == false)
+            {
+                return null;
+            }
+
             $TelegramClientManager = new TelegramClientManager();
+            $DeepAnalytics = new DeepAnalytics();
 
             $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
             $UserObject = User::fromArray($this->getMessage()->getFrom()->getRawData());
@@ -82,52 +113,11 @@
                 return null;
             }
 
-            $DeepAnalytics = new DeepAnalytics();
-
-
-            if($this->getMessage() == null)
-            {
-                return null;
-            }
-
-            if($this->getMessage()->getText(true) == null)
-            {
-                return null;
-            }
-
-            if(strlen($this->getMessage()->getText(true)) == 0)
-            {
-                return null;
-            }
-
-            if(self::chance(2))
-            {
-                $DeepAnalytics->tally('tg_lydia', 'chance_hit', 0);
-                $DeepAnalytics->tally('tg_lydia', 'chance_hit', (int)$ChatClient->getChatId());
-            }
-            elseif($this->getMessage()->getChat()->isGroupChat() || $this->getMessage()->getChat()->isSuperGroup())
-            {
-                if($this->getMessage()->getReplyToMessage() !== null)
-                {
-                    if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== null)
-                    {
-                        if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== TELEGRAM_BOT_NAME)
-                        {
-                            return null;
-                        }
-                    }
-                }
-                elseif(stripos($this->getMessage()->getText(true), "lydia") == false)
-                {
-                    return null;
-                }
-            }
-
             $CoffeeHouse = new CoffeeHouse();
             $Bot = new Cleverbot($CoffeeHouse);
 
-            $DeepAnalytics->tally('tg_lydia', 'messages', 0);
-            $DeepAnalytics->tally('tg_lydia', 'messages', (int)$ChatClient->getChatId());
+            //$DeepAnalytics->tally('tg_lydia', 'messages', 0);
+            //$DeepAnalytics->tally('tg_lydia', 'messages', (int)$ChatClient->getChatId());
 
             Request::sendChatAction([
                 "chat_id" => $this->getMessage()->getChat()->getId(),
