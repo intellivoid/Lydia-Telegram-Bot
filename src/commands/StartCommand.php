@@ -76,13 +76,12 @@
                 if($this->getMessage()->getForwardFrom() !== null)
                 {
                     $ForwardUserObject = User::fromArray($this->getMessage()->getForwardFrom()->getRawData());
+                    /** @noinspection PhpUnusedLocalVariableInspection */
                     $ForwardUserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($ForwardUserObject);
                 }
             }
             catch(Exception $e)
             {
-                //$TelegramClientManager->getDatabase()->close();
-
                 return Request::sendMessage([
                     "chat_id" => $this->getMessage()->getChat()->getId(),
                     "reply_to_message_id" => $this->getMessage()->getMessageId(),
@@ -94,7 +93,6 @@
                 ]);
             }
 
-            //$TelegramClientManager->getDatabase()->close();
             $DeepAnalytics = new DeepAnalytics();
             $DeepAnalytics->tally('tg_lydia', 'messages', 0);
             $DeepAnalytics->tally('tg_lydia', 'messages', (int)$TelegramClient->getChatId());
