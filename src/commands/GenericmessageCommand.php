@@ -97,19 +97,22 @@
                 return null;
             }
 
-            if($this->getMessage()->getReplyToMessage() !== null)
+            if($this->getMessage()->getChat()->isGroupChat() || $this->getMessage()->getChat()->isSuperGroup())
             {
-                if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== null)
+                if($this->getMessage()->getReplyToMessage() !== null)
                 {
-                    if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== TELEGRAM_BOT_NAME)
+                    if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== null)
                     {
-                        return null;
+                        if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== TELEGRAM_BOT_NAME)
+                        {
+                            return null;
+                        }
                     }
                 }
-            }
-            elseif(stripos($this->getMessage()->getText(true), "lydia") == false)
-            {
-                return null;
+                elseif(stripos($this->getMessage()->getText(true), "lydia") == false)
+                {
+                    return null;
+                }
             }
 
             $CoffeeHouse = new CoffeeHouse();
