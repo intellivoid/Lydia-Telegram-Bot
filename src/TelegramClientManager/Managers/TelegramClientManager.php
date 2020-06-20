@@ -36,34 +36,74 @@
         }
 
         /**
+         * Full registration command, returns an array of a structure of ("CLIENT", "CHAT" & "USER")
+         *
+         * @param Chat $chat
+         * @param User $user
+         * @param bool $return_public_id
+         * @return array
+         * @throws DatabaseException
+         * @throws InvalidSearchMethod
+         * @throws TelegramClientNotFoundException
+         * @noinspection PhpUnused
+         */
+        public function register(Chat $chat, User $user, bool $return_public_id=false): array
+        {
+            $Results = array();
+
+            $Results['CLIENT'] = $this->registerClient($chat, $user, $return_public_id);
+            $Results['USER'] = $this->registerUser($user, $return_public_id);
+            $Results['CHAT'] = $this->registerChat($chat, $return_public_id);
+
+            return $Results;
+        }
+
+        /**
          * Registers a new Telegram Client into the database
          *
          * @param Chat $chat
          * @param User $user
-         * @return TelegramClient
+         * @param bool $return_public_id
+         * @return TelegramClient|string
          * @throws DatabaseException
          * @throws InvalidSearchMethod
          * @throws TelegramClientNotFoundException
          */
-        public function registerClient(Chat $chat, User $user): TelegramClient
+        public function registerClient(Chat $chat, User $user, bool $return_public_id=false)
         {
             $CurrentTime = (int)time();
             $PublicID = Hashing::telegramClientPublicID($chat->ID, $user->ID);
-            $PublicID_og = $PublicID;
 
             try
             {
                 // Make sure duplicate usernames are not possible
-                $this->fixDuplicateUsername($chat, $user);
+                $ExistingClient = $this->getClient(TelegramClientSearchMethod::byPublicId, $PublicID);
 
-                $ExistingClient = $this->getClient(TelegramClientSearchMethod::byPublicId, $PublicID_og);
+                $UpdateRequired = false;
 
-                $ExistingClient->LastActivityTimestamp = $CurrentTime;
-                $ExistingClient->Available = true;
-                $ExistingClient->User = $user;
-                $ExistingClient->Chat = $chat;
+                if($chat->getUniqueHash() !== $ExistingClient->Chat->getUniqueHash())
+                {
+                    $ExistingClient->Chat = $chat;
+                    $UpdateRequired = true;
+                }
 
-                $this->updateClient($ExistingClient);
+                if($user->getUniqueHash() !== $ExistingClient->User->getUniqueHash())
+                {
+                    $ExistingClient->User = $user;
+                    $UpdateRequired = true;
+                }
+
+                if($UpdateRequired)
+                {
+                    $ExistingClient->LastActivityTimestamp = $CurrentTime;
+                    $ExistingClient->Available = true;
+                    $this->updateClient($ExistingClient);
+                }
+
+                if($return_public_id)
+                {
+                    return $PublicID;
+                }
 
                 return $ExistingClient;
             }
@@ -124,7 +164,12 @@
                 throw new DatabaseException($Query, $this->telegramClientManager->getDatabase()->error);
             }
 
-            return $this->getClient(TelegramClientSearchMethod::byPublicId, $PublicID_og);
+            if($return_public_id)
+            {
+                return $PublicID;
+            }
+
+            return $this->getClient(TelegramClientSearchMethod::byPublicId, $PublicID);
         }
 
         /**
@@ -183,7 +228,6 @@
 
             if($QueryResults == false)
             {
-                $QueryResults->close();
                 throw new DatabaseException($Query, $this->telegramClientManager->getDatabase()->error);
             }
             else
@@ -278,11 +322,12 @@
          * Updates an existing Telegram client in the database
          *
          * @param TelegramClient $telegramClient
+         * @param bool $retry_duplication
          * @return bool
          * @throws DatabaseException
          * @throws InvalidSearchMethod
          */
-        public function updateClient(TelegramClient $telegramClient): bool
+        public function updateClient(TelegramClient $telegramClient, bool $retry_duplication=true): bool
         {
             $id = (int)$telegramClient->ID;
             $available = (int)$telegramClient->Available;
@@ -323,6 +368,12 @@
             }
             else
             {
+                if($retry_duplication)
+                {
+                    $this->fixDuplicateUsername($telegramClient->Chat, $telegramClient->User);
+                    return $this->updateClient($telegramClient, false);
+                }
+
                 throw new DatabaseException($Query, $this->telegramClientManager->getDatabase()->error);
             }
         }
@@ -331,13 +382,14 @@
          * Registers the client as a user only (private)
          *
          * @param User $user
-         * @return TelegramClient
+         * @param bool $return_public_id
+         * @return TelegramClient|string
          * @throws DatabaseException
          * @throws InvalidSearchMethod
          * @throws TelegramClientNotFoundException
          * @noinspection PhpUnused
          */
-        public function registerUser(User $user): TelegramClient
+        public function registerUser(User $user, $return_public_id=false)
         {
             $ChatObject = new Chat();
             $ChatObject->ID = $user->ID;
@@ -347,20 +399,21 @@
             $ChatObject->FirstName = $user->FirstName;
             $ChatObject->LastName = $user->LastName;
 
-            return $this->registerClient($ChatObject, $user);
+            return $this->registerClient($ChatObject, $user, $return_public_id);
         }
 
         /**
          * Registers the client as a chat only (bot based)
          *
          * @param Chat $chat
-         * @return TelegramClient
+         * @param bool $return_public_id
+         * @return TelegramClient|string
          * @throws DatabaseException
          * @throws InvalidSearchMethod
          * @throws TelegramClientNotFoundException
          * @noinspection PhpUnused
          */
-        public function registerChat(Chat $chat): TelegramClient
+        public function registerChat(Chat $chat, $return_public_id=false)
         {
             $UserObject = new User();
             $UserObject->ID = $chat->ID;
@@ -370,7 +423,7 @@
             $UserObject->IsBot = false;
             $UserObject->Username = $chat->Username;
 
-            return $this->registerClient($chat, $UserObject);
+            return $this->registerClient($chat, $UserObject, $return_public_id);
         }
         /**
          * Searches and overwrites old duplicate usernames

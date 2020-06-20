@@ -59,6 +59,63 @@
         public $LastName;
 
         /**
+         * Returns a unique hash of the chat object to represent the object as a whole
+         *
+         * @return string
+         * @noinspection DuplicatedCode
+         */
+        public function getUniqueHash(): string
+        {
+            if($this->LastName == null)
+            {
+                $name_hash = hash('crc32', $this->FirstName);
+            }
+            else
+            {
+                $name_hash = hash('crc32', $this->FirstName . $this->LastName);
+            }
+
+
+            if($this->Username == null)
+            {
+                $username_hash = hash('crc32', "NONE");
+            }
+            else
+            {
+                $username_hash = hash('crc32', $this->Username);
+            }
+
+            if($this->Title == null)
+            {
+                $title_hash = hash('crc32', "NONE");
+            }
+            else
+            {
+                $title_hash = hash('crc32', $this->Title);
+            }
+
+            if($this->Type == null)
+            {
+                $type_hash = hash('crc32', "NONE");
+            }
+            else
+            {
+                $type_hash = hash('crc32', $this->Type);
+            }
+
+            if($this->ID == null)
+            {
+                $id_hash = hash('crc32', "NONE");
+            }
+            else
+            {
+                $id_hash = hash('crc32', $this->ID);
+            }
+
+            return hash('sha256', $name_hash . $username_hash, $title_hash . $type_hash . $id_hash);
+        }
+
+        /**
          * Creates array from object
          *
          * @return array
