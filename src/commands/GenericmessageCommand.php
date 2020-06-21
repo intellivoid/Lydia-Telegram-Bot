@@ -55,34 +55,6 @@
          */
         public function execute()
         {
-            $TelegramClientManager = new TelegramClientManager();
-
-            $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
-            $UserObject = User::fromArray($this->getMessage()->getFrom()->getRawData());
-
-            try
-            {
-                $TelegramClient = $TelegramClientManager->getTelegramClientManager()->registerClient($ChatObject, $UserObject, true);
-                $ChatClient = $TelegramClientManager->getTelegramClientManager()->registerChat($ChatObject, false);
-                $TelegramClientManager->getTelegramClientManager()->registerUser($UserObject, true);
-
-                // Define and update the forwarder if available
-                if($this->getMessage()->getForwardFrom() !== null)
-                {
-                    $ForwardUserObject = User::fromArray($this->getMessage()->getForwardFrom()->getRawData());
-                    $TelegramClientManager->getTelegramClientManager()->registerUser($ForwardUserObject, true);
-                }
-            }
-            catch(Exception $e)
-            {
-                return null;
-            }
-
-            fastcgi_end_request();
-            $DeepAnalytics = new DeepAnalytics();
-            $DeepAnalytics->tally('tg_lydia', 'messages', 0);
-            $DeepAnalytics->tally('tg_lydia', 'messages', (int)$ChatClient->getChatId());
-
             if($this->getMessage() == null)
             {
                 return null;
@@ -116,6 +88,30 @@
                 }
             }
 
+            $TelegramClientManager = new TelegramClientManager();
+
+            $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
+            $UserObject = User::fromArray($this->getMessage()->getFrom()->getRawData());
+
+            try
+            {
+                $TelegramClient = $TelegramClientManager->getTelegramClientManager()->registerClient($ChatObject, $UserObject, true);
+                $ChatClient = $TelegramClientManager->getTelegramClientManager()->registerChat($ChatObject, false);
+                $TelegramClientManager->getTelegramClientManager()->registerUser($UserObject, true);
+
+                // Define and update the forwarder if available
+                if($this->getMessage()->getForwardFrom() !== null)
+                {
+                    $ForwardUserObject = User::fromArray($this->getMessage()->getForwardFrom()->getRawData());
+                    $TelegramClientManager->getTelegramClientManager()->registerUser($ForwardUserObject, true);
+                }
+            }
+            catch(Exception $e)
+            {
+                return null;
+            }
+
+            $DeepAnalytics = new DeepAnalytics();
             $CoffeeHouse = new CoffeeHouse();
             $Bot = new Cleverbot($CoffeeHouse);
 
