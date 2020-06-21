@@ -18,7 +18,6 @@
     use Longman\TelegramBot\Request;
     use TelegramClientManager\Exceptions\DatabaseException;
     use TelegramClientManager\Objects\TelegramClient\Chat;
-    use TelegramClientManager\Objects\TelegramClient\User;
     use TelegramClientManager\TelegramClientManager;
 
     /**
@@ -121,6 +120,8 @@
 
                 $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
             }
+
+            $DeepAnalytics = new DeepAnalytics();
 
             // Check if the Telegram Client has a session ID
             if(isset($ChatClient->SessionData->Data['lydia_session_id']) == false)
