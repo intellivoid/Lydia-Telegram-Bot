@@ -78,6 +78,7 @@
                 return null;
             }
 
+            fastcgi_end_request();
             $DeepAnalytics = new DeepAnalytics();
             $DeepAnalytics->tally('tg_lydia', 'messages', 0);
             $DeepAnalytics->tally('tg_lydia', 'messages', (int)$ChatClient->getChatId());
