@@ -54,6 +54,7 @@
          */
         public function execute()
         {
+            return null;
             $TelegramClientManager = new TelegramClientManager();
             $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
 
