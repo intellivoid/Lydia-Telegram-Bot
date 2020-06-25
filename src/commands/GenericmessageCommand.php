@@ -5,21 +5,19 @@
     namespace Longman\TelegramBot\Commands\SystemCommands;
 
     use CoffeeHouse\Bots\Cleverbot;
-    use CoffeeHouse\CoffeeHouse;
     use CoffeeHouse\Exceptions\BotSessionException;
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
-    use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\SystemCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
+    use LydiaTelegramBot;
     use TelegramClientManager\Exceptions\DatabaseException;
     use TelegramClientManager\Objects\TelegramClient\Chat;
     use TelegramClientManager\Objects\TelegramClient\User;
-    use TelegramClientManager\TelegramClientManager;
 
     /**
      * Generic Command
@@ -55,7 +53,7 @@
          */
         public function execute()
         {
-            $TelegramClientManager = new TelegramClientManager();
+            $TelegramClientManager = LydiaTelegramBot::getTelegramClientManager();
 
             $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
             $UserObject = User::fromArray($this->getMessage()->getFrom()->getRawData());
@@ -117,7 +115,7 @@
                 }
             }
 
-            $CoffeeHouse = new CoffeeHouse();
+            $CoffeeHouse = LydiaTelegramBot::getCoffeeHouse();
             $Bot = new Cleverbot($CoffeeHouse);
 
             Request::sendChatAction([
@@ -139,7 +137,7 @@
                 $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
             }
 
-            $DeepAnalytics = new DeepAnalytics();
+            $DeepAnalytics = LydiaTelegramBot::getDeepAnalytics();
 
             // Check if the Telegram Client has a session ID
             if(isset($ChatClient->SessionData->Data['lydia_session_id']) == false)
