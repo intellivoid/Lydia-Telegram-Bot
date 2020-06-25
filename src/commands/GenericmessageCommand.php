@@ -18,6 +18,7 @@
     use Longman\TelegramBot\Request;
     use TelegramClientManager\Exceptions\DatabaseException;
     use TelegramClientManager\Objects\TelegramClient\Chat;
+    use TelegramClientManager\Objects\TelegramClient\User;
     use TelegramClientManager\TelegramClientManager;
 
     /**
@@ -54,13 +55,29 @@
          */
         public function execute()
         {
-            return null;
             $TelegramClientManager = new TelegramClientManager();
+
             $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
+            $UserObject = User::fromArray($this->getMessage()->getFrom()->getRawData());
 
             try
             {
-                $ChatClient = $TelegramClientManager->getTelegramClientManager()->registerChat($ChatObject, false);
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $TelegramClient = $TelegramClientManager->getTelegramClientManager()->registerClient($ChatObject, $UserObject);
+
+                // Define and update chat client
+                $ChatClient = $TelegramClientManager->getTelegramClientManager()->registerChat($ChatObject);
+
+                // Define and update user client
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $UserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($UserObject);
+
+                // Define and update the forwarder if available
+                if($this->getMessage()->getForwardFrom() !== null)
+                {
+                    $ForwardUserObject = User::fromArray($this->getMessage()->getForwardFrom()->getRawData());
+                    $TelegramClientManager->getTelegramClientManager()->registerUser($ForwardUserObject);
+                }
             }
             catch(Exception $e)
             {
