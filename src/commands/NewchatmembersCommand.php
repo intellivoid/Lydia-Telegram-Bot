@@ -6,18 +6,14 @@
 
     namespace Longman\TelegramBot\Commands\SystemCommands;
 
-    use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\Commands\SystemCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
-    use TelegramClientManager\Exceptions\DatabaseException;
-    use TelegramClientManager\Exceptions\InvalidSearchMethod;
-    use TelegramClientManager\Exceptions\TelegramClientNotFoundException;
+    use LydiaTelegramBot;
     use TelegramClientManager\Objects\TelegramClient\Chat;
     use TelegramClientManager\Objects\TelegramClient\User;
-    use TelegramClientManager\TelegramClientManager;
 
     /**
      * New chat member command
@@ -44,15 +40,12 @@
          *
          * @return ServerResponse
          * @throws TelegramException
-         * @throws DatabaseException
-         * @throws InvalidSearchMethod
-         * @throws TelegramClientNotFoundException
          * @noinspection DuplicatedCode
          */
         public function execute()
         {
             return null;
-            $TelegramClientManager = new TelegramClientManager();
+            $TelegramClientManager = LydiaTelegramBot::getTelegramClientManager();
 
             $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
             $UserObject = User::fromArray($this->getMessage()->getFrom()->getRawData());
@@ -91,7 +84,7 @@
                 ]);
             }
 
-            $DeepAnalytics = new DeepAnalytics();
+            $DeepAnalytics = LydiaTelegramBot::getDeepAnalytics();
             $DeepAnalytics->tally('tg_spam_protection', 'messages', 0);
             $DeepAnalytics->tally('tg_spam_protection', 'new_member', 0);
             $DeepAnalytics->tally('tg_spam_protection', 'messages', (int)$TelegramClient->getChatId());

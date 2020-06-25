@@ -7,21 +7,19 @@
     namespace Longman\TelegramBot\Commands\SystemCommands;
 
     use CoffeeHouse\Bots\Cleverbot;
-    use CoffeeHouse\CoffeeHouse;
     use CoffeeHouse\Exceptions\BotSessionException;
     use CoffeeHouse\Exceptions\DatabaseException;
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
-    use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\UserCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
+    use LydiaTelegramBot;
     use TelegramClientManager\Objects\TelegramClient\Chat;
     use TelegramClientManager\Objects\TelegramClient\User;
-    use TelegramClientManager\TelegramClientManager;
 
     /**
      * Chat command
@@ -69,7 +67,7 @@
          */
         public function execute()
         {
-            $TelegramClientManager = new TelegramClientManager();
+            $TelegramClientManager = LydiaTelegramBot::getTelegramClientManager();
 
             $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
             $UserObject = User::fromArray($this->getMessage()->getFrom()->getRawData());
@@ -95,7 +93,6 @@
             }
             catch(Exception $e)
             {
-                //$TelegramClientManager->getDatabase()->close();
                 return Request::sendMessage([
                     "chat_id" => $this->getMessage()->getChat()->getId(),
                     "reply_to_message_id" => $this->getMessage()->getMessageId(),
@@ -107,7 +104,7 @@
                 ]);
             }
 
-            $DeepAnalytics = new DeepAnalytics();
+            $DeepAnalytics = LydiaTelegramBot::getDeepAnalytics();
             $DeepAnalytics->tally('tg_lydia', 'messages', 0);
             $DeepAnalytics->tally('tg_lydia', 'messages', (int)$ChatClient->getChatId());
 
@@ -128,7 +125,7 @@
                 "action" => ChatAction::TYPING
             ]);
 
-            $CoffeeHouse = new CoffeeHouse();
+            $CoffeeHouse = LydiaTelegramBot::getCoffeeHouse();
             $Bot = new Cleverbot($CoffeeHouse);
 
             // Check the default language

@@ -5,21 +5,19 @@
     namespace Longman\TelegramBot\Commands\SystemCommands;
 
     use CoffeeHouse\Bots\Cleverbot;
-    use CoffeeHouse\CoffeeHouse;
     use CoffeeHouse\Exceptions\BotSessionException;
     use CoffeeHouse\Exceptions\ForeignSessionNotFoundException;
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
-    use DeepAnalytics\DeepAnalytics;
     use Exception;
     use Longman\TelegramBot\Commands\UserCommand;
     use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Exception\TelegramException;
     use Longman\TelegramBot\Request;
+    use LydiaTelegramBot;
     use TelegramClientManager\Exceptions\DatabaseException;
     use TelegramClientManager\Exceptions\InvalidSearchMethod;
     use TelegramClientManager\Objects\TelegramClient\Chat;
     use TelegramClientManager\Objects\TelegramClient\User;
-    use TelegramClientManager\TelegramClientManager;
 
     /**
      * Newsession Command
@@ -70,7 +68,7 @@
          */
         public function execute()
         {
-            $TelegramClientManager = new TelegramClientManager();
+            $TelegramClientManager = LydiaTelegramBot::getTelegramClientManager();
 
             $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
             $UserObject = User::fromArray($this->getMessage()->getFrom()->getRawData());
@@ -108,8 +106,8 @@
                 ]);
             }
 
-            $CoffeeHouse = new CoffeeHouse();
-            $DeepAnalytics = new DeepAnalytics();
+            $CoffeeHouse = LydiaTelegramBot::getCoffeeHouse();
+            $DeepAnalytics = LydiaTelegramBot::getDeepAnalytics();
             $Bot = new Cleverbot($CoffeeHouse);
 
             $DeepAnalytics->tally('tg_lydia', 'messages', 0);
