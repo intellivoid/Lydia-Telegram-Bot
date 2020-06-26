@@ -439,16 +439,7 @@ class Telegram
 
             // Send the updates to be processed in the background by a worker immedietaly
             $backgroundWorker->getClient()->getGearmanClient()->doBackground(
-                "process_batch",  $response->toJson()
-            );
-
-            //Mark update(s) as read after handling
-            Request::getUpdates(
-                [
-                    'offset'  => $this->last_update_id + 1,
-                    'limit'   => 1,
-                    'timeout' => $timeout,
-                ]
+                "process_lydia_batch",  $response->toJson()
             );
         }
 
