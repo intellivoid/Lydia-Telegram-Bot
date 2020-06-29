@@ -35,7 +35,7 @@
         /**
          * @var string
          */
-        protected $version = '1.0.1';
+        protected $version = '1.0.2';
 
         /**
          * Executes the generic message command
@@ -97,19 +97,24 @@
                 return null;
             }
 
+            $IsMatch = (bool)preg_match("/\blydia\b/i", strtolower($this->getMessage()->getText(true)));
+
             if($this->getMessage()->getChat()->isGroupChat() || $this->getMessage()->getChat()->isSuperGroup())
             {
                 if($this->getMessage()->getReplyToMessage() !== null)
                 {
+                    $ReplyUsername = 'None';
                     if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== null)
                     {
-                        if($this->getMessage()->getReplyToMessage()->getFrom()->getUsername() !== TELEGRAM_BOT_NAME)
-                        {
-                            return null;
-                        }
+                        $ReplyUsername =  $this->getMessage()->getReplyToMessage()->getFrom()->getUsername();
+                    }
+
+                    if(strtolower($ReplyUsername) !== strtolower(TELEGRAM_BOT_NAME))
+                    {
+                        return null;
                     }
                 }
-                elseif(stripos($this->getMessage()->getText(true), "lydia") == false)
+                elseif($IsMatch == false)
                 {
                     return null;
                 }
