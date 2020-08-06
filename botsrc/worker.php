@@ -51,7 +51,7 @@
     {
         $current_directory = __DIR__;
     }
-    
+
     require($current_directory . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php');
 
     if(class_exists("LydiaTelegramBot") == false)
