@@ -145,19 +145,9 @@
             $DeepAnalytics = LydiaTelegramBot::getDeepAnalytics();
 
             // Check if the Telegram Client has a session ID
-            if(isset($ChatClient->SessionData->Data['lydia_session_id']) == false)
+            try
             {
-                $Bot->newSession($ChatClient->SessionData->Data['lydia_default_language']);
-                $ChatClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
-                $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
-
-                $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
-                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$ChatClient->getChatId());
-            }
-            else
-            {
-                $Bot->loadSession($ChatClient->SessionData->Data['lydia_session_id']);
-                if((int)time() > $Bot->getSession()->Expires)
+                if(isset($ChatClient->SessionData->Data['lydia_session_id']) == false)
                 {
                     $Bot->newSession($ChatClient->SessionData->Data['lydia_default_language']);
                     $ChatClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
@@ -166,6 +156,40 @@
                     $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
                     $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$ChatClient->getChatId());
                 }
+                else
+                {
+                    $Bot->loadSession($ChatClient->SessionData->Data['lydia_session_id']);
+
+                    if((int)time() > $Bot->getSession()->Expires)
+                    {
+                        $Bot->newSession($ChatClient->SessionData->Data['lydia_default_language']);
+                        $ChatClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
+                        $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
+
+                        $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                        $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$ChatClient->getChatId());
+                    }
+
+                    if($Bot->getSession()->Available == false)
+                    {
+                        $Bot->newSession($ChatClient->SessionData->Data['lydia_default_language']);
+                        $ChatClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
+                        $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
+
+                        $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                        $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$ChatClient->getChatId());
+                    }
+                }
+            }
+            catch(Exception $e)
+            {
+                // If a session error raises
+                $Bot->newSession($ChatClient->SessionData->Data['lydia_default_language']);
+                $ChatClient->SessionData->Data['lydia_session_id'] = $Bot->getSession()->SessionID;
+                $TelegramClientManager->getTelegramClientManager()->updateClient($ChatClient);
+
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', 0);
+                $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$ChatClient->getChatId());
             }
 
             if($this->getMessage()->getText(true) == null)
@@ -195,7 +219,22 @@
                 $DeepAnalytics->tally('tg_lydia', 'created_sessions', (int)$ChatClient->getChatId());
 
                 // Rethink the output
-                $Output = $Bot->think($this->getMessage()->getText(true));
+                try
+                {
+                    $Output = $Bot->think($this->getMessage()->getText(true));
+                }
+                catch(Exception $e)
+                {
+                    // Bug fix: This raises another unhandled exception due to a session error.
+                    $Bot->getSession()->Available = false;
+                    $CoffeeHouse->getForeignSessionsManager()->updateSession($Bot->getSession());
+
+                    return Request::sendMessage([
+                        "chat_id" => $this->getMessage()->getChat()->getId(),
+                        "reply_to_message_id" => $this->getMessage()->getMessageId(),
+                        "text" => "I'm sorry, I think an error occurred with our chat session, please try again later."
+                    ]);
+                }
             }
 
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', 0);
