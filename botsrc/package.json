@@ -8,11 +8,12 @@
         "description": "Machine Learning Chat Bot that can talk about any topic in any language.",
         "url": "https://github.com/intellivoid/Lydia-Telegram-Bot",
         "dependencies": [
-            {"package": "net.intellivoid.acm", "required": true, "version": "latest"},
-            {"package": "net.intellivoid.background_worker", "required": true, "version": "latest"},
-            {"package": "net.intellivoid.coffeehouse", "required": true, "version": "latest"},
-            {"package": "net.intellivoid.deepanalytics", "required": true, "version": "latest"},
-            {"package": "net.intellivoid.telegram_client_manager", "required": true, "version": "latest"}
+            {"package": "net.intellivoid.acm", "required": true, "version": "latest", "source": "default@github/intellivoid/acm"},
+            {"package": "net.intellivoid.background_worker", "required": true, "version": "latest", "source": "default@github/intellivoid/backgroundworker"},
+            {"package": "net.intellivoid.coffeehouse", "required": true, "version": "latest", "source": "default@github/intellivoid/coffeehouse"},
+            {"package": "net.intellivoid.deepanalytics", "required": true, "version": "latest", "source": "default@github/intellivoid/deepanalytics"},
+            {"package": "net.intellivoid.telegram_client_manager", "required": true, "version": "latest", "source": "default@github/intellivoid/iva-telegram"},
+            {"package": "com.sentry.sdk", "required": true, "version": "latest", "source": "sentry@composer/sdk"}
         ],
         "configuration": {
             "autoload_method": "indexed",
