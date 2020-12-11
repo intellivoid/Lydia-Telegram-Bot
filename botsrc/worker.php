@@ -43,10 +43,8 @@
         \ppm\ppm::import("net.intellivoid.coffeehouse");
         \ppm\ppm::import("net.intellivoid.deepanalytics");
         \ppm\ppm::import("net.intellivoid.telegram_client_manager");
-        \ppm\ppm::import("com.sentry.sdk");
     }
 
-    Sentry\init(['dsn' => 'https://39e1c652ba5f4fad8a0f3cc386f8288b@o258582.ingest.sentry.io/5552851' ]);
 
     $current_directory = getcwd();
 
