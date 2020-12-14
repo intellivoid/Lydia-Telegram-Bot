@@ -15,10 +15,10 @@
     use Longman\TelegramBot\Exception\TelegramException;
     use ppm\ppm;
     use VerboseAdventure\Abstracts\EventType;
-    use VerboseAdventure\Classes\ErrorHandler;
     use VerboseAdventure\VerboseAdventure;
 
-    /** @noinspection PhpIncludeInspection */
+
+/** @noinspection PhpIncludeInspection */
     require("ppm");
 
     // Import all required auto loaders
@@ -37,7 +37,7 @@
     ppm::import("net.intellivoid.verbose_adventure");
 
     VerboseAdventure::setStdout(true); // Enable stdout
-    ErrorHandler::registerHandlers(); // Register error handlers
+    \VerboseAdventure\Classes\ErrorHandler::registerHandlers(); // Register error handlers
 
     $current_directory = getcwd();
 
