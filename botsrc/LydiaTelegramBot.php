@@ -8,8 +8,9 @@
     use CoffeeHouse\CoffeeHouse;
     use DeepAnalytics\DeepAnalytics;
     use TelegramClientManager\TelegramClientManager;
+use VerboseAdventure\VerboseAdventure;
 
-    /**
+/**
      * Class LydiaTelegramBot
      */
     class LydiaTelegramBot
@@ -35,6 +36,11 @@
          * @var TelegramClientManager
          */
         public static $TelegramClientManager;
+
+        /**
+         * @var VerboseAdventure
+         */
+        public static $LogHandler;
 
         /**
          * Auto Configures ACM
@@ -134,5 +140,21 @@
         public static function getCoffeeHouse(): CoffeeHouse
         {
             return self::$CoffeeHouse;
+        }
+
+        /**
+         * @return VerboseAdventure
+         */
+        public static function getLogHandler(): VerboseAdventure
+        {
+            return self::$LogHandler;
+        }
+
+        /**
+         * @param VerboseAdventure $LogHandler
+         */
+        public static function setLogHandler(VerboseAdventure $LogHandler): void
+        {
+            self::$LogHandler = $LogHandler;
         }
     }

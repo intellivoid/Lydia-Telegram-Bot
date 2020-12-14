@@ -228,11 +228,12 @@
                     // Bug fix: This raises another unhandled exception due to a session error.
                     $Bot->getSession()->Available = false;
                     $CoffeeHouse->getForeignSessionsManager()->updateSession($Bot->getSession());
+                    $exception_id = LydiaTelegramBot::getLogHandler()->logException($e, get_class($this));
 
                     return Request::sendMessage([
                         "chat_id" => $this->getMessage()->getChat()->getId(),
                         "reply_to_message_id" => $this->getMessage()->getMessageId(),
-                        "text" => "I'm sorry, I think an error occurred with our chat session, please try again later."
+                        "text" => "I'm sorry, I think an error occurred with our chat session, please try again later. ($exception_id)"
                     ]);
                 }
             }

@@ -95,13 +95,14 @@
             }
             catch(Exception $e)
             {
+                $exception_id = LydiaTelegramBot::getLogHandler()->logException($e, get_class($this));
                 return Request::sendMessage([
                     "chat_id" => $this->getMessage()->getChat()->getId(),
                     "reply_to_message_id" => $this->getMessage()->getMessageId(),
                     "parse_mode" => "html",
                     "text" =>
                         "Oops! Something went wrong! contact someone in @IntellivoidDiscussions\n\n" .
-                        "Error Code: <code>" . $e->getCode() . "</code>\n" .
+                        "Error Code: <code>" . $exception_id . "</code>\n" .
                         "Object: <code>Commands/newsession.bin</code>"
                 ]);
             }

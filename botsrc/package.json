@@ -2,18 +2,48 @@
     "package": {
         "package_name": "net.intellivoid.lydia_chat_bot",
         "name": "LydiaChatBot",
-        "version": "2.0.0.0",
+        "version": "2.0.0.1",
         "author": "Zi Xing Narrakas",
         "organization": "Intellivoid",
         "description": "Machine Learning Chat Bot that can talk about any topic in any language.",
         "url": "https://github.com/intellivoid/Lydia-Telegram-Bot",
         "dependencies": [
-            {"package": "net.intellivoid.acm", "required": true, "version": "latest", "source": "default@github/intellivoid/acm"},
-            {"package": "net.intellivoid.background_worker", "required": true, "version": "latest", "source": "default@github/intellivoid/backgroundworker"},
-            {"package": "net.intellivoid.coffeehouse", "required": true, "version": "latest", "source": "default@github/intellivoid/coffeehouse"},
-            {"package": "net.intellivoid.deepanalytics", "required": true, "version": "latest", "source": "default@github/intellivoid/deepanalytics"},
-            {"package": "net.intellivoid.telegram_client_manager", "required": true, "version": "latest", "source": "default@github/intellivoid/iva-telegram"},
-            {"package": "com.sentry.sdk", "required": true, "version": "latest", "source": "sentry@composer/sdk"}
+            {
+                "package": "net.intellivoid.acm",
+                "required": true,
+                "version": "latest",
+                "source": "default@github/intellivoid/acm"
+            },
+            {
+                "package": "net.intellivoid.background_worker",
+                "required": true,
+                "version": "latest",
+                "source": "default@github/intellivoid/backgroundworker"
+            },
+            {
+                "package": "net.intellivoid.coffeehouse",
+                "required": true,
+                "version": "latest",
+                "source": "default@github/intellivoid/coffeehouse"
+            },
+            {
+                "package": "net.intellivoid.deepanalytics",
+                "required": true,
+                "version": "latest",
+                "source": "default@github/intellivoid/deepanalytics"
+            },
+            {
+                "package": "net.intellivoid.telegram_client_manager",
+                "required": true,
+                "version": "latest",
+                "source": "default@github/intellivoid/iva-telegram"
+            },
+            {
+                "package": "net.intellivoid.verbose_adventure",
+                "version": "latest",
+                "required": true,
+                "source": "default@github/intellivoid/VerboseAdventure"
+            }
         ],
         "configuration": {
             "autoload_method": "indexed",
@@ -53,15 +83,7 @@
         },
         {
             "required": true,
-            "file": "index.php"
-        },
-        {
-            "required": true,
             "file": "LydiaTelegramBot.php"
-        },
-        {
-            "required": true,
-            "file": "TgFileLogging.php"
         },
         {
             "required": true,

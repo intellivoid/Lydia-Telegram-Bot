@@ -13,32 +13,31 @@
 
     use BackgroundWorker\BackgroundWorker;
     use Longman\TelegramBot\Exception\TelegramException;
+    use ppm\ppm;
+    use VerboseAdventure\Abstracts\EventType;
+    use VerboseAdventure\Classes\ErrorHandler;
+    use VerboseAdventure\VerboseAdventure;
 
     /** @noinspection PhpIncludeInspection */
     require("ppm");
 
     // Import all required auto loaders
-    if(defined("PPM") == false)
-    {
-        /** @noinspection PhpIncludeInspection */
-        include_once(__DIR__ . DIRECTORY_SEPARATOR . 'CoffeeHouse' . DIRECTORY_SEPARATOR . 'CoffeeHouse.php');
 
-        /** @noinspection PhpIncludeInspection */
-        include_once(__DIR__ . DIRECTORY_SEPARATOR . 'BackgroundWorker' . DIRECTORY_SEPARATOR . 'BackgroundWorker.php');
+    /** @noinspection PhpUnhandledExceptionInspection */
+    ppm::import("net.intellivoid.acm");
+    /** @noinspection PhpUnhandledExceptionInspection */
+    ppm::import("net.intellivoid.background_worker");
+    /** @noinspection PhpUnhandledExceptionInspection */
+    ppm::import("net.intellivoid.coffeehouse");
+    /** @noinspection PhpUnhandledExceptionInspection */
+    ppm::import("net.intellivoid.deepanalytics");
+    /** @noinspection PhpUnhandledExceptionInspection */
+    ppm::import("net.intellivoid.telegram_client_manager");
+    /** @noinspection PhpUnhandledExceptionInspection */
+    ppm::import("net.intellivoid.verbose_adventure");
 
-        if(class_exists('DeepAnalytics\DeepAnalytics') == false)
-        {
-            include_once(__DIR__ . DIRECTORY_SEPARATOR . 'DeepAnalytics' . DIRECTORY_SEPARATOR . 'DeepAnalytics.php');
-        }
-    }
-    else
-    {
-        \ppm\ppm::import("net.intellivoid.acm");
-        \ppm\ppm::import("net.intellivoid.background_worker");
-        \ppm\ppm::import("net.intellivoid.coffeehouse");
-        \ppm\ppm::import("net.intellivoid.deepanalytics");
-        \ppm\ppm::import("net.intellivoid.telegram_client_manager");
-    }
+    VerboseAdventure::setStdout(true); // Enable stdout
+    ErrorHandler::registerHandlers(); // Register error handlers
 
     $current_directory = getcwd();
 
@@ -60,13 +59,7 @@
         include_once($current_directory . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php');
     }
 
-    if(class_exists("TgFileLogging") == false)
-    {
-        include_once($current_directory . DIRECTORY_SEPARATOR . 'TgFileLogging.php');
-    }
-
     // Load all configurations
-
     /** @noinspection PhpUnhandledExceptionInspection */
     $TelegramServiceConfiguration = LydiaTelegramBot::getTelegramConfiguration();
 
@@ -78,7 +71,8 @@
 
     // Create the Telegram Bot instance (NO SQL)
 
-    define("TELEGRAM_BOT_NAME", $TelegramServiceConfiguration['BotName'], false);
+    define("TELEGRAM_BOT_NAME", $TelegramServiceConfiguration['BotName']);
+    LydiaTelegramBot::setLogHandler(new VerboseAdventure(TELEGRAM_BOT_NAME));
 
     if(strtolower($TelegramServiceConfiguration['BotName']) == 'true')
     {
@@ -89,9 +83,7 @@
         define("TELEGRAM_BOT_ENABLED", false);
     }
 
-    TgFileLogging::writeLog(TgFileLogging::INFO, TELEGRAM_BOT_NAME . "_main",
-        "Starting Service"
-    );
+    LydiaTelegramBot::getLogHandler()->log(EventType::INFO, "Starting Service", "Main");
     
     try
     {
@@ -102,28 +94,14 @@
     }
     catch (Longman\TelegramBot\Exception\TelegramException $e)
     {
-        TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-            "Telegram Exception Raised: " . $e->getMessage()
-        );
-        TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-            "Line: " . $e->getLine()
-        );
-        TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-            "File: " . $e->getFile()
-        );
-        TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-            "Trace: " . json_encode($e->getTrace())
-        );
+        LydiaTelegramBot::getLogHandler()->logException($e, "Main");
         exit(255);
     }
 
     $telegram->useGetUpdatesWithoutDatabase();
 
     // Start the workers using the supervisor
-
-    TgFileLogging::writeLog(TgFileLogging::INFO, TELEGRAM_BOT_NAME . "_main",
-        "Starting Supervisor"
-    );
+    LydiaTelegramBot::getLogHandler()->log(EventType::INFO, "Starting Supervisor", "Main");
 
     try
     {
@@ -139,73 +117,32 @@
     }
     catch(Exception $e)
     {
-        TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-            "Supervisor Exception Raised: " . $e->getMessage()
-        );
-        TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-            "Line: " . $e->getLine()
-        );
-        TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-            "File: " . $e->getFile()
-        );
-        TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-            "Trace: " . json_encode($e->getTrace())
-        );
-        TgFileLogging::writeLog(TgFileLogging::WARNING, TELEGRAM_BOT_NAME . "_main",
-            "Make sure Gearman is running!"
-        );
+        LydiaTelegramBot::getLogHandler()->logException($e, "Main");
         exit(255);
     }
 
     // Start listening to updates
-
     while(true)
     {
         try
         {
-            TgFileLogging::writeLog(TgFileLogging::INFO, TELEGRAM_BOT_NAME . "_main",
-                "Listening for updates"
-            );
+            LydiaTelegramBot::getLogHandler()->log(EventType::INFO, "Listening for updates", "Main");
             $server_response = $telegram->handleBackgroundUpdates(LydiaTelegramBot::getBackgroundWorker());
             if ($server_response->isOk())
             {
                 $update_count = count($server_response->getResult());
                 if($update_count > 0)
                 {
-                    if($update_count == 1)
-                    {
-                        TgFileLogging::writeLog(TgFileLogging::INFO, TELEGRAM_BOT_NAME . "_main",
-                            "Processed $update_count update"
-                        );
-                    }
-                    else
-                    {
-                        TgFileLogging::writeLog(TgFileLogging::INFO, TELEGRAM_BOT_NAME . "_main",
-                            "Processed $update_count updates"
-                        );
-                    }
+                    LydiaTelegramBot::getLogHandler()->log(EventType::INFO, "Processed $update_count update(s)", "Main");
                 }
             }
             else
             {
-                TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-                    "Failed to fetch updates: " . $server_response->printError(true)
-                );
+                LydiaTelegramBot::getLogHandler()->log(EventType::ERROR, "Failed to fetch updates: " . $server_response->printError(true), "Main");
             }
         }
         catch (TelegramException $e)
         {
-            TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-                "Telegram Exception Raised: " . $e->getMessage()
-            );
-            TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-                "Line: " . $e->getLine()
-            );
-            TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-                "File: " . $e->getFile()
-            );
-            TgFileLogging::writeLog(TgFileLogging::ERROR, TELEGRAM_BOT_NAME . "_main",
-                "Trace: " . json_encode($e->getTrace())
-            );
+            LydiaTelegramBot::getLogHandler()->logException($e, "Main");
         }
     }
