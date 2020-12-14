@@ -17,6 +17,7 @@
     use TelegramClientManager\TelegramClientManager;
     use VerboseAdventure\Abstracts\EventType;
     use VerboseAdventure\VerboseAdventure;
+    use VerboseAdventure\Classes\ErrorHandler;
 
     /** @noinspection PhpIncludeInspection */
     require("ppm");
