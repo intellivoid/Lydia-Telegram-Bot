@@ -11,7 +11,8 @@
     use BackgroundWorker\BackgroundWorker;
     use CoffeeHouse\CoffeeHouse;
     use DeepAnalytics\DeepAnalytics;
-    use Longman\TelegramBot\Entities\ServerResponse;
+use Longman\TelegramBot\DB;
+use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Entities\Update;
     use ppm\ppm;
     use TelegramClientManager\TelegramClientManager;
@@ -183,6 +184,31 @@
 
     while(true)
     {
+        try
+        {
+            try
+            {
+                DB::getPdo()->query('SELECT 1');
+            }
+            catch (PDOException $e)
+            {
+                $telegram->enableMySql(array(
+                    'host' => $DatabaseConfiguration['Host'],
+                    'port' => $DatabaseConfiguration['Port'],
+                    'user' => $DatabaseConfiguration['Username'],
+                    'password' => $DatabaseConfiguration['Password'],
+                    'database' => $DatabaseConfiguration['Database'],
+                ));
+            }
+
+            LydiaTelegramBot::$CoffeeHouse->getDatabase()->ping();
+            LydiaTelegramBot::$TelegramClientManager->getDatabase()->ping();
+        }
+        catch(Exception $e)
+        {
+            LydiaTelegramBot::getLogHandler()->logException($e, "Worker");
+        }
+
         try
         {
             $BackgroundWorker->getWorker()->work();
