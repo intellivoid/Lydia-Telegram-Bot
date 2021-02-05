@@ -12,8 +12,8 @@
      */
 
     use BackgroundWorker\BackgroundWorker;
-use Longman\TelegramBot\Exception\TelegramException;
-use ppm\ppm;
+    use Longman\TelegramBot\Exception\TelegramException;
+    use ppm\ppm;
     use VerboseAdventure\Abstracts\EventType;
     use VerboseAdventure\Classes\ErrorHandler;
     use VerboseAdventure\VerboseAdventure;
@@ -35,28 +35,28 @@ use ppm\ppm;
     ppm::import("net.intellivoid.telegram_client_manager");
     /** @noinspection PhpUnhandledExceptionInspection */
     ppm::import("net.intellivoid.verbose_adventure");
+    /** @noinspection PhpUnhandledExceptionInspection */
+    ppm::import("net.intellivoid.tdlib");
 
     VerboseAdventure::setStdout(true); // Enable stdout
     ErrorHandler::registerHandlers(); // Register error handlers
 
     $current_directory = getcwd();
 
-    if(file_exists($current_directory . DIRECTORY_SEPARATOR . "vendor") == false)
-    {
-        $current_directory = __DIR__;
-    }
-
-    if(file_exists($current_directory . DIRECTORY_SEPARATOR . "vendor") == false)
-    {
-        print("Cannot find vendor directory" . PHP_EOL);
-        exit(255);
-    }
-
-    require($current_directory . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php');
-
     if(class_exists("LydiaTelegramBot") == false)
     {
-        include_once($current_directory . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php');
+        if(file_exists($current_directory . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php'))
+        {
+            require_once($current_directory . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php');
+        }
+        elseif(file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php'))
+        {
+            require_once(__DIR__ . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php');
+        }
+        else
+        {
+            throw new RuntimeException("Cannot locate bot class");
+        }
     }
 
     // Load all configurations

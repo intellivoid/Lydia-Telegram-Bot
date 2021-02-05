@@ -11,8 +11,7 @@
     use BackgroundWorker\BackgroundWorker;
     use CoffeeHouse\CoffeeHouse;
     use DeepAnalytics\DeepAnalytics;
-use Longman\TelegramBot\DB;
-use Longman\TelegramBot\Entities\ServerResponse;
+    use Longman\TelegramBot\Entities\ServerResponse;
     use Longman\TelegramBot\Entities\Update;
     use ppm\ppm;
     use TelegramClientManager\TelegramClientManager;
@@ -36,24 +35,29 @@ use Longman\TelegramBot\Entities\ServerResponse;
     ppm::import("net.intellivoid.telegram_client_manager");
     /** @noinspection PhpUnhandledExceptionInspection */
     ppm::import("net.intellivoid.verbose_adventure");
+    /** @noinspection PhpUnhandledExceptionInspection */
+    ppm::import("net.intellivoid.tdlib");
 
     VerboseAdventure::setStdout(true); // Enable stdout
     ErrorHandler::registerHandlers(); // Register error handlers
 
     $current_directory = getcwd();
 
-    if(file_exists($current_directory . DIRECTORY_SEPARATOR . "vendor") == false)
-    {
-        $current_directory = __DIR__;
-    }
-
-    require($current_directory . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php');
-
     if(class_exists("LydiaTelegramBot") == false)
     {
-        include_once($current_directory . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php');
+        if(file_exists($current_directory . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php'))
+        {
+            require_once($current_directory . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php');
+        }
+        elseif(file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php'))
+        {
+            require_once(__DIR__ . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php');
+        }
+        else
+        {
+            throw new RuntimeException("Cannot locate bot class");
+        }
     }
-
     // Load all required configurations
 
     /** @noinspection PhpUnhandledExceptionInspection */
@@ -85,7 +89,22 @@ use Longman\TelegramBot\Entities\ServerResponse;
             $TelegramServiceConfiguration['BotToken'],
             $TelegramServiceConfiguration['BotName']
         );
-        $telegram->addCommandsPaths([__DIR__ . DIRECTORY_SEPARATOR . 'commands']);
+
+        if(file_exists($current_directory . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php'))
+        {
+            $telegram->addCommandsPaths([$current_directory . DIRECTORY_SEPARATOR . 'commands']);
+        }
+        elseif(file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'LydiaTelegramBot.php'))
+        {
+            $telegram->addCommandsPaths([__DIR__ . DIRECTORY_SEPARATOR . 'commands']);
+        }
+        else
+        {
+            print("Cannot locate commands path");
+            exit(1);
+        }
+
+        \Longman\TelegramBot\TelegramLog::initialize();
     }
     catch (Longman\TelegramBot\Exception\TelegramException $e)
     {
@@ -151,23 +170,27 @@ use Longman\TelegramBot\Entities\ServerResponse;
         try
         {
             $ServerResponse = new ServerResponse(json_decode($job->workload(), true), TELEGRAM_BOT_NAME);
-            $UpdateCount = count($ServerResponse->getResult());
 
-            if($UpdateCount > 0)
+            if(is_null($ServerResponse->getResult()) == false)
             {
-                LydiaTelegramBot::getLogHandler()->log(EventType::INFO, "Processing $UpdateCount update(s)", "Worker");
+                $UpdateCount = count($ServerResponse->getResult());
 
-                /** @var Update $result */
-                foreach ($ServerResponse->getResult() as $result)
+                if($UpdateCount > 0)
                 {
-                    try
+                    LydiaTelegramBot::getLogHandler()->log(EventType::INFO, "Processing $UpdateCount update(s)", "Worker");
+
+                    /** @var Update $result */
+                    foreach ($ServerResponse->getResult() as $result)
                     {
-                        LydiaTelegramBot::getLogHandler()->log(EventType::INFO, "Processing update ID " . $result->getUpdateId(), "Worker");
-                        $telegram->processUpdate($result);
-                    }
-                    catch(Exception $e)
-                    {
-                        LydiaTelegramBot::getLogHandler()->logException($e, "Worker");
+                        try
+                        {
+                            LydiaTelegramBot::getLogHandler()->log(EventType::INFO, "Processing update ID " . $result->getUpdateId(), "Worker");
+                            $telegram->processUpdate($result);
+                        }
+                        catch(Exception $e)
+                        {
+                            LydiaTelegramBot::getLogHandler()->logException($e, "Worker");
+                        }
                     }
                 }
             }
