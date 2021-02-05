@@ -165,7 +165,7 @@
     }
 
     // Define the function "process_batch" to process a batch of Updates from Telegram in the background
-    $BackgroundWorker->getWorker()->getGearmanWorker()->addFunction("process_lydia_batch", function(GearmanJob $job) use ($telegram)
+    $BackgroundWorker->getWorker()->getGearmanWorker()->addFunction($telegram->getBotUsername() . "_updates", function(GearmanJob $job) use ($telegram)
     {
         try
         {
