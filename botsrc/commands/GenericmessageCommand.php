@@ -124,8 +124,5 @@
             return $ChatCommand->processThought($this->getMessage(), $TelegramClientManager, $ChatClient, $this->getMessage()->getText(true));
         }
 
-        private static function chance($percent)
-        {
-            return mt_rand(0, 5000) < $percent;
-        }
+
     }

@@ -6,6 +6,7 @@
 
     namespace Longman\TelegramBot\Commands\SystemCommands;
 
+    use CoffeeHouse\Abstracts\EmotionType;
     use CoffeeHouse\Bots\Cleverbot;
     use CoffeeHouse\Exceptions\BotSessionException;
     use CoffeeHouse\Exceptions\DatabaseException;
@@ -13,6 +14,7 @@
     use CoffeeHouse\Exceptions\InvalidSearchMethodException;
     use CoffeeHouse\Exceptions\LocalSessionNotFoundException;
     use CoffeeHouse\Exceptions\NoResultsFoundException;
+    use CoffeeHouse\Objects\LargeGeneralization;
     use Exception;
     use Longman\TelegramBot\ChatAction;
     use Longman\TelegramBot\Commands\UserCommand;
@@ -273,10 +275,118 @@
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', 0);
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', (int)$chatClient->getChatId());
 
+            $predictionEmojiFeedback = $this->predictionEmojiFeedback($Bot->getLocalSession()->EmotionLargeGeneralization);
+            if($predictionEmojiFeedback == null)
+            {
+                $predictionEmojiFeedback = (string)null;
+            }
+            else
+            {
+                $predictionEmojiFeedback = " $predictionEmojiFeedback";
+            }
+
             return Request::sendMessage([
                 "chat_id" => $message->getChat()->getId(),
                 "reply_to_message_id" => $message->getMessageId(),
-                "text" => $Output
+                "text" => $Output . $predictionEmojiFeedback . "\n\n" .
+                    "Emotion: " . $Bot->getLocalSession()->EmotionLargeGeneralization->TopLabel . "\n" .
+                    "Emotion Value: " . $Bot->getLocalSession()->EmotionLargeGeneralization->TopProbability . "\n" .
+                    "Language: " . $Bot->getLocalSession()->LanguageLargeGeneralization->TopLabel . "\n" .
+                    "Language Value: " . $Bot->getLocalSession()->LanguageLargeGeneralization->TopProbability
             ]);
+        }
+
+        /**
+         * Determine the chance
+         *
+         * @param $percent
+         * @return bool
+         */
+        private static function chance($percent)
+        {
+            return mt_rand(0, 5000) < $percent;
+        }
+
+        private function predictionEmojiFeedback(LargeGeneralization $emotionLargeGeneralization): ?string
+        {
+            $emotion_priority = 0;
+
+            if(self::chance(800)) $emotion_priority = 1;
+
+            switch($emotionLargeGeneralization->Probabilities[$emotion_priority]->Label)
+            {
+                case EmotionType::Sadness:
+                    $emojis = [
+                        "\u{1F614}",
+                        "\u{1F622}",
+                        "\u{1F61E}",
+                        "\u{1F62D}",
+                    ];
+
+                    if(self::chance(2500))
+                    {
+                        return $emojis[array_rand($emojis)];
+                    }
+
+                    break;
+
+                case EmotionType::Happiness:
+                    $emojis = [
+                        "\u{1F603}",
+                        "\u{1F60A}",
+                        "\u{1F601}",
+                        "\u{1F63A}",
+                    ];
+
+                    return $emojis[array_rand($emojis)];
+
+                case EmotionType::Anger:
+                    $emojis = [
+                        "\u{1F621}",
+                        "\u{1F620}",
+                        "\u{1F624}",
+                        "\u{1F92C}",
+                    ];
+
+                    if(self::chance(2500))
+                    {
+                        return $emojis[array_rand($emojis)];
+                    }
+
+                    break;
+
+                case EmotionType::Affection:
+                    $emojis = [
+                        "\u{1F618}",
+                        "\u{1F60D}",
+                        "\u{263A}",
+                        "\u{1F61A}",
+                    ];
+
+                    if(self::chance(2500))
+                    {
+                        return $emojis[array_rand($emojis)];
+                    }
+
+                    break;
+
+                case EmotionType::Neutral:
+                    $emojis = [
+                        "\u{1F610}",
+                        "\u{1F928}",
+                        "\u{1F642}",
+                        "\u{1F9D0}",
+                        "\u{1F927}",
+                    ];
+
+                    if(self::chance(300))
+                    {
+                        return $emojis[array_rand($emojis)];
+                    }
+
+                    break;
+            }
+
+            return null;
         }
     }
