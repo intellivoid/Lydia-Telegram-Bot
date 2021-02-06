@@ -2,7 +2,7 @@
     "package": {
         "package_name": "net.intellivoid.lydia_chat_bot",
         "name": "LydiaChatBot",
-        "version": "2.0.0.1",
+        "version": "2.0.0.2",
         "author": "Zi Xing Narrakas",
         "organization": "Intellivoid",
         "description": "Machine Learning Chat Bot that can talk about any topic in any language.",

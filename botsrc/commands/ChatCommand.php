@@ -162,6 +162,34 @@
                 "action" => ChatAction::TYPING
             ]);
 
+            $enable_lydiachan = false;
+
+            if(strtolower($input) == "lydiachan")
+            {
+                if(isset($chatClient->SessionData->Data["lydiachan_enabled"]))
+                {
+                    if($chatClient->SessionData->Data["lydiachan_enabled"])
+                    {
+                        $chatClient->SessionData->Data["lydiachan_enabled"] = false;
+                    }
+                    else
+                    {
+                        $chatClient->SessionData->Data["lydiachan_enabled"] = true;
+                    }
+                }
+                else
+                {
+                    $chatClient->SessionData->Data["lydiachan_enabled"] = true;
+                }
+
+                $telegramClientManager->getTelegramClientManager()->updateClient($chatClient);
+            }
+
+            if(isset($chatClient->SessionData->Data["lydiachan_enabled"]))
+            {
+                $enable_lydiachan = (bool)$chatClient->SessionData->Data["lydiachan_enabled"];
+            }
+
             if(isset($chatClient->SessionData->Data['lydia_default_language']) == false)
             {
                 if(is_null($message->getFrom()->getLanguageCode()))
@@ -275,7 +303,7 @@
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', 0);
             $DeepAnalytics->tally('tg_lydia', 'ai_responses', (int)$chatClient->getChatId());
 
-            $predictionEmojiFeedback = $this->predictionEmojiFeedback($Bot->getLocalSession()->EmotionLargeGeneralization);
+            $predictionEmojiFeedback = $this->predictionEmojiFeedback($Bot->getLocalSession()->EmotionLargeGeneralization, $enable_lydiachan);
             if($predictionEmojiFeedback == null)
             {
                 $predictionEmojiFeedback = (string)null;
@@ -285,14 +313,14 @@
                 $predictionEmojiFeedback = " $predictionEmojiFeedback";
             }
 
+
+            if($enable_lydiachan)
+                $Output = $this->owofiy($Output);
+
             return Request::sendMessage([
                 "chat_id" => $message->getChat()->getId(),
                 "reply_to_message_id" => $message->getMessageId(),
-                "text" => $Output . $predictionEmojiFeedback . "\n\n" .
-                    "Emotion: " . $Bot->getLocalSession()->EmotionLargeGeneralization->TopLabel . "\n" .
-                    "Emotion Value: " . $Bot->getLocalSession()->EmotionLargeGeneralization->TopProbability . "\n" .
-                    "Language: " . $Bot->getLocalSession()->LanguageLargeGeneralization->TopLabel . "\n" .
-                    "Language Value: " . $Bot->getLocalSession()->LanguageLargeGeneralization->TopProbability
+                "text" => $Output . $predictionEmojiFeedback
             ]);
         }
 
@@ -307,7 +335,7 @@
             return mt_rand(0, 5000) < $percent;
         }
 
-        private function predictionEmojiFeedback(LargeGeneralization $emotionLargeGeneralization): ?string
+        private function predictionEmojiFeedback(LargeGeneralization $emotionLargeGeneralization, bool $weebMode=false): ?string
         {
             $emotion_priority = 0;
 
@@ -323,8 +351,30 @@
                         "\u{1F62D}",
                     ];
 
-                    if(self::chance(2500))
+                    $weeb = [
+                        "(ノ_<。)",
+                        "(μ_μ)",
+                        "o(TヘTo)",
+                        "( ﾟ，_ゝ｀)",
+                        "( ﾟ，_ゝ｀)",
+                        "(T_T)"
+                    ];
+
+                    $chance = false;
+
+                    if($weebMode)
                     {
+                        $chance = self::chance(4000);
+                    }
+                    else
+                    {
+                        $chance =self::chance(2500);
+                    }
+
+                    if($chance)
+                    {
+                        if($weebMode)
+                            return $weeb[array_rand($weeb)];
                         return $emojis[array_rand($emojis)];
                     }
 
@@ -338,7 +388,33 @@
                         "\u{1F63A}",
                     ];
 
-                    return $emojis[array_rand($emojis)];
+                    $weeb = [
+                        "╰(▔∀▔)╯",
+                        "(*≧ω≦*)",
+                        "٩(◕‿◕)۶",
+                        "(〃＾▽＾〃)",
+                        "＼(٥⁀▽⁀ )／",
+                        "(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
+                    ];
+
+                    $chance = false;
+
+                    if($weebMode)
+                    {
+                        $chance = self::chance(4000);
+                    }
+                    else
+                    {
+                        $chance =self::chance(2500);
+                    }
+
+                    if($chance)
+                    {
+                        if($weebMode)
+                            return $weeb[array_rand($weeb)];
+                        return $emojis[array_rand($emojis)];
+                    }
+                    break;
 
                 case EmotionType::Anger:
                     $emojis = [
@@ -348,10 +424,32 @@
                         "\u{1F92C}",
                     ];
 
-                    if(self::chance(2500))
+                    $weeb = [
+                        "(・`ω´・)",
+                        "(＃`Д´)",
+                        "(`皿´＃)",
+                        "┌∩┐(◣_◢)┌∩┐",
+                        "(凸ಠ益ಠ)凸",
+                    ];
+
+                    $chance = false;
+
+                    if($weebMode)
                     {
+                        $chance = self::chance(4000);
+                    }
+                    else
+                    {
+                        $chance = self::chance(2500);
+                    }
+
+                    if($chance)
+                    {
+                        if($weebMode)
+                            return $weeb[array_rand($weeb)];
                         return $emojis[array_rand($emojis)];
                     }
+
 
                     break;
 
@@ -363,8 +461,31 @@
                         "\u{1F61A}",
                     ];
 
-                    if(self::chance(2500))
+                    $weeb = [
+                        "ヽ(♡‿♡)ノ",
+                        "♡ (￣З￣)",
+                        "(❤ω❤)",
+                        "Σ>―(〃°ω°〃)♡→",
+                        "Σ>―(〃°ω°〃)♡→",
+                        "(´• ω •`) ♡",
+                        "(´,,•ω•,,)♡",
+                    ];
+
+                    $chance = false;
+
+                    if($weebMode)
                     {
+                        $chance = self::chance(4000);
+                    }
+                    else
+                    {
+                        $chance = self::chance(2500);
+                    }
+
+                    if($chance)
+                    {
+                        if($weebMode)
+                            return $weeb[array_rand($weeb)];
                         return $emojis[array_rand($emojis)];
                     }
 
@@ -379,8 +500,34 @@
                         "\u{1F927}",
                     ];
 
-                    if(self::chance(300))
+                    $weeb = [
+                        "(*・ω・)ﾉ",
+                        "(づ￣ ³￣)づ",
+                        "(つ≧▽≦)つ",
+                        "(つ✧ω✧)つ",
+                        "(^人<)〜☆",
+                        "┬┴┬┴┤･ω･)ﾉ",
+                        "┬┴┬┴┤( ͡° ͜ʖ├┬┴┬┴",
+                        "ε===(っ≧ω≦)っ",
+                        "(=^ ◡ ^=)",
+                        "(∩ᄑ_ᄑ)⊃━☆ﾟ*･｡*･:≡( ε:)",
+                    ];
+
+                    $chance = false;
+
+                    if($weebMode)
                     {
+                        $chance = self::chance(4000);
+                    }
+                    else
+                    {
+                        $chance = self::chance(300);
+                    }
+
+                    if($chance)
+                    {
+                        if($weebMode)
+                            return $weeb[array_rand($weeb)];
                         return $emojis[array_rand($emojis)];
                     }
 
@@ -388,5 +535,54 @@
             }
 
             return null;
+        }
+
+        public function owofiy(string $input)
+        {
+            // Make it lowercase
+            $input = strtolower($input);
+
+            // Fuck up the commas and periods
+            $commas = [",", ",,", ",,,", ",,,,", ",,,,,",];
+            $periods = ["..", ".,.,", "..,..,", ",,", ",,,,", "...", ".....", ",.."];
+            $exclamations = ["!", "!!", "11", "!111!", "111!1", "!!111!11", "!!!!!", "!11!11"];
+            $questions = ["?", "??", "?//?//d", "?????", "?!?!?", "??!?!?!??!"];
+            $input = str_ireplace(",", $commas[array_rand($commas)], $input);
+            $input = str_ireplace(".", $periods[array_rand($periods)], $input);
+            $input = str_ireplace(".", $questions[array_rand($questions)], $input);
+
+            // Fuck up the ascii
+            $smiles = ["( ´ ω ` )", "(≧◡≦)", "(╯✧▽✧)╯"];
+            $sadness = ["｡ﾟ(TヮT)ﾟ｡", "o(TヘTo)", "o(〒﹏〒)o", "(╯︵╰,)"];
+            $input = str_ireplace(":(", $sadness[array_rand($sadness)], $input);
+            $input = str_ireplace(":)", $smiles[array_rand($smiles)], $input);
+
+            // Fuck up the words
+            $brothers = ["onichan", "onichann", "oni-chan", "oniiichannnn"];
+            $sisters = ["onee-chan", "onneechann", "onechan", "oneeechaaannnnn"];
+            $dad = ["otuo-san", "outosann", "otuosaaann", "otuosaaannn"];
+            $input = str_ireplace("brother", $brothers[array_rand($brothers)], $input);
+            $input = str_ireplace("you", "senpai", $input);
+            $input = str_ireplace("love", "wanna fuk", $input);
+            $input = str_ireplace("brown", "the color of shit", $input);
+            $input = str_ireplace("red", "blood color", $input);
+            $input = str_ireplace("anime", "the purpose to my life", $input);
+            $input = str_ireplace("mother", "gay", $input);
+            $input = str_ireplace("sister", $sisters[array_rand($sisters)], $input);
+            $input = str_ireplace("dad", $dad[array_rand($dad)], $input);
+            $input = str_ireplace("awoooooo", "bakaaaaaa", $input);
+            $input = str_ireplace("awooooo", "bakaaaaa", $input);
+            $input = str_ireplace("awoooo", "bakaaaa", $input);
+            $input = str_ireplace("awooo", "bakaaa", $input);
+            $input = str_ireplace("awoo", "bakaa", $input);
+            $input = str_ireplace("awo", "baka", $input);
+            $input = str_ireplace("idiot", "baka", $input);
+
+            // Fuck up the spelling
+            $input = str_ireplace("ove", "uv", $input);
+            $input = str_ireplace("l", "w", $input);
+            $input = str_ireplace("r", "w", $input);
+
+            return $input;
         }
     }
