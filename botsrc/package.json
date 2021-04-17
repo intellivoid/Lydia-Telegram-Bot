@@ -81,19 +81,7 @@
         },
         {
             "required": true,
-            "file": "commands/GenericmessageCommand.php"
-        },
-        {
-            "required": true,
-            "file": "commands/NewchatmembersCommand.php"
-        },
-        {
-            "required": true,
             "file": "commands/StartCommand.php"
-        },
-        {
-            "required": true,
-            "file": "commands/NewsessionCommand.php"
         }
     ],
     "files": [

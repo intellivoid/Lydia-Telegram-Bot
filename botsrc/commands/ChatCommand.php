@@ -65,72 +65,17 @@
         /**
          * Executes the chat command
          *
-         * @return ServerResponse
-         * @throws BotSessionException
-         * @throws DatabaseException
-         * @throws ForeignSessionNotFoundException
-         * @throws InvalidSearchMethodException
+         * @return ServerResponse|null
          * @throws TelegramException
-         * @throws \TelegramClientManager\Exceptions\DatabaseException
-         * @throws Exception
          */
         public function execute(): ?ServerResponse
         {
-            $TelegramClientManager = LydiaTelegramBot::getTelegramClientManager();
-
-            $ChatObject = Chat::fromArray($this->getMessage()->getChat()->getRawData());
-            $UserObject = User::fromArray($this->getMessage()->getFrom()->getRawData());
-
-            try
-            {
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $TelegramClient = $TelegramClientManager->getTelegramClientManager()->registerClient($ChatObject, $UserObject);
-
-                // Define and update chat client
-                $ChatClient = $TelegramClientManager->getTelegramClientManager()->registerChat($ChatObject);
-
-                // Define and update user client
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $UserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($UserObject);
-
-                // Define and update the forwarder if available
-                if($this->getMessage()->getForwardFrom() !== null)
-                {
-                    $ForwardUserObject = User::fromArray($this->getMessage()->getForwardFrom()->getRawData());
-                    $ForwardUserClient = $TelegramClientManager->getTelegramClientManager()->registerUser($ForwardUserObject);
-                }
-            }
-            catch(Exception $e)
-            {
-                $exception_id = LydiaTelegramBot::getLogHandler()->logException($e, get_class($this));
-                return Request::sendMessage([
-                    "chat_id" => $this->getMessage()->getChat()->getId(),
-                    "reply_to_message_id" => $this->getMessage()->getMessageId(),
-                    "parse_mode" => "html",
-                    "text" =>
-                        "Oops! Something went wrong! contact someone in @IntellivoidDiscussions\n\n" .
-                        "Error Code: <code>" . $exception_id . "</code>\n" .
-                        "Object: <code>Commands/newsession.bin</code>"
-                ]);
-            }
-
-            $DeepAnalytics = LydiaTelegramBot::getDeepAnalytics();
-            $DeepAnalytics->tally('tg_lydia', 'messages', 0);
-            $DeepAnalytics->tally('tg_lydia', 'messages', (int)$ChatClient->getChatId());
-
-            if(strlen($this->getMessage()->getText(true)) == 0)
-            {
-                return Request::sendMessage([
-                    "chat_id" => $this->getMessage()->getChat()->getId(),
-                    "reply_to_message_id" => $this->getMessage()->getMessageId(),
-                    "parse_mode" => "html",
-                    "text" =>
-                        "That's not how you use the chat command!\n\n".
-                        "<code>/chat Hello</code>"
-                ]);
-            }
-
-            return $this->processThought($this->getMessage(), $TelegramClientManager, $ChatClient, $this->getMessage()->getText(true));
+            return Request::sendMessage([
+                "chat_id" => $this->getMessage()->getChat()->getId(),
+                "reply_to_message_id" => $this->getMessage()->getMessageId(),
+                "parse_mode" => "html",
+                "text" => "This bot is no longer going to be updated, we encourage that you remove this bot from your group. For more information see https://blog.intellivoid.net/2021/04/farewell-lydia.html\n\n If you have any questions, see @IntellivoidDiscussions"
+            ]);
         }
 
         /**
